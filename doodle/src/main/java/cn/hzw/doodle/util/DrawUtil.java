@@ -159,6 +159,32 @@ public class DrawUtil {
         return coords;
     }
 
+    /**
+     * 将向量 (startX, startY) -> (endX, endY) 沿顺时针旋转角度degree， 返回向量旋转后的(endX, endY)
+     * @param startX
+     * @param startY
+     * @param degree
+     * @param endX
+     * @param endY
+     * @param degree
+     * @param coords
+     * @return 向量旋转后的(endX, endY)
+     */
+    public static PointF rotateVecByDegree(float startX, float startY, float endX, float endY,
+                                   float degree, PointF coords) {
+        if (degree % 360 == 0) {
+            coords.x = endX;
+            coords.y = endY;
+            return coords;
+        }
+        /*角度变成弧度*/
+        float radian = (float) (degree * Math.PI / 180);
+        coords.x = (float) ((endX - startX) * Math.cos(radian) - (endY - startY) * Math.sin(radian) + startX);
+        coords.y = (float) ((endX - startX) * Math.sin(radian) + (endY - startY) * Math.cos(radian) + startY);
+
+        return coords;
+    }
+
     public static void main(String[] args) {
         /*PointF pointF = new PointF(0,0);
         restoreRotatePointInDoodle(pointF,90,0,0,0,100,100);

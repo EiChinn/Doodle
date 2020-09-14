@@ -15,10 +15,14 @@ public enum DoodleShape implements IDoodleShape {
     HAND_WRITE, // 手绘
     ARROW, // 箭头
     LINE, // 直线
-    FILL_CIRCLE, // 实心圆
+    HOLLOW_RECT, // 空心矩形
     HOLLOW_CIRCLE, // 空心圆
-    FILL_RECT, // 实心矩形
-    HOLLOW_RECT; // 空心矩形
+    // POLYGON
+    TRIANGLE,
+    PENTAGON,
+    HEXAGON,
+    FILL_CIRCLE, // 实心圆
+    FILL_RECT; // 实心矩形
 
 
     @Override

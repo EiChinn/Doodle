@@ -63,6 +63,12 @@ public class DoodlePath extends DoodleRotatableItemBase {
             updateCirclePath(mOriginPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
         } else if (DoodleShape.FILL_RECT.equals(getShape()) || DoodleShape.HOLLOW_RECT.equals(getShape())) {
             updateRectPath(mOriginPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
+        } else if (DoodleShape.TRIANGLE.equals(getShape())) {
+            updateTrianglePath(mOriginPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
+        } else if (DoodleShape.PENTAGON.equals(getShape())) {
+            updatePentagonPath(mOriginPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
+        } else if (DoodleShape.HEXAGON.equals(getShape())) {
+            updateHexagonPath(mOriginPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
         }
 
         adjustPath(true);
@@ -217,6 +223,34 @@ public class DoodlePath extends DoodleRotatableItemBase {
         float radius = (float) Math.sqrt((sx - dx) * (sx - dx) + (sy - dy) * (sy - dy));
         path.addCircle(sx, sy, radius, Path.Direction.CCW);
 
+    }
+
+    private PointF nextPoint;
+    private void updatePolygonPath(Path path, float sx, float sy, float dx, float dy, float sideSize) {
+        path.moveTo(dx, dy);
+        if (nextPoint == null) {
+            nextPoint = new PointF();
+        }
+        for (int i = 1; i < sideSize; i++) {
+            DrawUtil.rotateVecByDegree(sx, sy, dx, dy, (360 / sideSize) * i, nextPoint);
+            path.lineTo(nextPoint.x, nextPoint.y);
+        }
+        path.close();
+    }
+
+    private void updateTrianglePath(Path path, float sx, float sy, float dx, float dy, float size) {
+        updatePolygonPath(path, sx, sy, dx, dy, 3);
+    }
+
+
+
+    private void updatePentagonPath(Path path, float sx, float sy, float dx, float dy, float size) {
+
+        updatePolygonPath(path, sx, sy, dx, dy, 5);
+    }
+
+    private void updateHexagonPath(Path path, float sx, float sy, float dx, float dy, float size) {
+        updatePolygonPath(path, sx, sy, dx, dy, 6);
     }
 
     private void updateRectPath(Path path, float sx, float sy, float dx, float dy, float size) {
