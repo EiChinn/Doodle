@@ -1,6 +1,7 @@
 package cn.hzw.doodle;
 
 import android.graphics.Canvas;
+import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 
 import cn.hzw.doodle.core.IDoodle;
@@ -24,8 +25,14 @@ public enum DoodleShape implements IDoodleShape {
     public void config(IDoodleItem doodleItem, Paint paint) {
         if (doodleItem.getShape() == DoodleShape.ARROW || doodleItem.getShape() == DoodleShape.FILL_CIRCLE || doodleItem.getShape() == DoodleShape.FILL_RECT) {
             paint.setStyle(Paint.Style.FILL);
+            paint.setPathEffect(null);
         } else {
             paint.setStyle(Paint.Style.STROKE);
+            if (doodleItem.getDoodle().getLineType() == IDoodle.LineType.SOLID_LINE) {
+                paint.setPathEffect(null);
+            } else {
+                paint.setPathEffect(new DashPathEffect(new float[] {50, 25}, 0));
+            }
         }
     }
 

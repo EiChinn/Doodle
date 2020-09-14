@@ -9,10 +9,12 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bigkoo.alertview.AlertView;
+import com.bigkoo.alertview.OnItemClickListener;
+
 import java.util.ArrayList;
 
 import cn.forward.androids.utils.LogUtil;
-import cn.hzw.doodle.DoodleActivity;
 import cn.hzw.doodle.DoodleParams;
 import cn.hzw.doodle.DoodleView;
 import cn.hzw.doodledemo.guide.DoodleGuideActivity;
@@ -33,7 +35,30 @@ public class MainActivity extends Activity {
         findViewById(R.id.btn_select_image).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ImageSelectorActivity.startActivityForResult(REQ_CODE_SELECT_IMAGE, MainActivity.this, null, false);
+                new AlertView.Builder().setContext(MainActivity.this)
+                        .setStyle(AlertView.Style.ActionSheet)
+                        .setTitle("选择操作")
+                        .setMessage(null)
+                        .setCancelText("取消")
+                        .setDestructive("空白底图", "从相册中选择")
+                        .setOthers(null)
+                        .setOnItemClickListener(new OnItemClickListener() {
+                            @Override
+                            public void onItemClick(Object o, int position) {
+                                switch (position) {
+                                    case 0:
+                                        toDoodleActivity("");
+                                        break;
+                                    case 1:
+                                        ImageSelectorActivity.startActivityForResult(REQ_CODE_SELECT_IMAGE, MainActivity.this, null, false);
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                        })
+                        .build()
+                        .show();
             }
         });
 
@@ -69,20 +94,8 @@ public class MainActivity extends Activity {
             ArrayList<String> list = data.getStringArrayListExtra(ImageSelectorActivity.KEY_PATH_LIST);
             if (list != null && list.size() > 0) {
                 LogUtil.d("Doodle", list.get(0));
+                toDoodleActivity(list.get(0));
 
-                // 涂鸦参数
-                DoodleParams params = new DoodleParams();
-                params.mIsFullScreen = true;
-                // 图片路径
-                params.mImagePath = list.get(0);
-                // 初始画笔大小
-                params.mPaintUnitSize = DoodleView.DEFAULT_SIZE;
-                // 画笔颜色
-                params.mPaintColor = Color.RED;
-                // 是否支持缩放item
-                params.mSupportScaleItem = true;
-                // 启动涂鸦页面
-                DoodleActivity.startActivityForResult(MainActivity.this, params, REQ_CODE_DOODLE);
             }
         } else if (requestCode == REQ_CODE_DOODLE) {
             if (data == null) {
@@ -99,5 +112,21 @@ public class MainActivity extends Activity {
                 Toast.makeText(getApplicationContext(), "error", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    private void toDoodleActivity(String imgPath) {
+        // 涂鸦参数
+        DoodleParams params = new DoodleParams();
+        params.mIsFullScreen = true;
+        // 图片路径
+        params.mImagePath = imgPath;
+        // 初始画笔大小
+        params.mPaintUnitSize = DoodleView.DEFAULT_SIZE;
+        // 画笔颜色
+        params.mPaintColor = Color.RED;
+        // 是否支持缩放item
+        params.mSupportScaleItem = true;
+        // 启动涂鸦页面
+        DoodleActivity.startActivityForResult(MainActivity.this, params, REQ_CODE_DOODLE);
     }
 }

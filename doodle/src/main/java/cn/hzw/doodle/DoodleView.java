@@ -1415,4 +1415,16 @@ public class DoodleView extends FrameLayout implements IDoodle {
             }
         }
     }
+
+    private LineType lineType = LineType.SOLID_LINE;
+
+    @Override
+    public LineType getLineType() {
+        return lineType;
+    }
+
+    @Override
+    public void setLineType(LineType lineType) {
+        this.lineType = lineType;
+    }
 }

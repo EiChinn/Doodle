@@ -25,6 +25,8 @@ dependencies {
     implementation ('cn.hzw.imageselector:library:1.0'){
         transitive = false
     }
+    implementation "androidx.constraintlayout:constraintlayout:2.0.1"
+    implementation 'com.bigkoo:alertview:1.0.3'
 
 /*    // test
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.6.2'

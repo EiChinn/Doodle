@@ -309,4 +309,24 @@ public interface IDoodle {
      */
     public void refresh();
 
+
+    /**
+     * 虚线 or 实线
+     */
+    enum LineType {
+        SOLID_LINE, DOTTED_LINE
+    }
+
+    /**
+     * 获取线型
+     * @return
+     */
+    LineType getLineType();
+
+    /**
+     * 设置线型
+     * @param lineType
+     */
+    void setLineType(LineType lineType);
+
 }
