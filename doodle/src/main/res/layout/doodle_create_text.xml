@@ -15,6 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
+            android:imeOptions="flagNoExtractUi"
             android:background="#88000000"
             android:padding="10dp"
             android:textColor="#ffffff"
