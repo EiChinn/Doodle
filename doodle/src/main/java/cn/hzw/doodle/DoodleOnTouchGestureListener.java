@@ -557,19 +557,22 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
 
     public void closeCurrentPath() {
         if (((DoodleShape) mDoodle.getShape())== DoodleShape.POLYLINE) {
-            mCurrPath.close();
-            mCurrDoodlePath = DoodlePath.toPath(mDoodle, mCurrPath);
-            if (mDoodle.isOptimizeDrawing()) {
-                mDoodle.markItemToOptimizeDrawing(mCurrDoodlePath);
-            } else {
-                mDoodle.addItem(mCurrDoodlePath);
+            if (mCurrPath != null) {
+                mCurrPath.close();
+                mCurrDoodlePath = DoodlePath.toPath(mDoodle, mCurrPath);
+                if (mDoodle.isOptimizeDrawing()) {
+                    mDoodle.markItemToOptimizeDrawing(mCurrDoodlePath);
+                } else {
+                    mDoodle.addItem(mCurrDoodlePath);
+                }
+                if (mDoodle.isOptimizeDrawing()) {
+                    mDoodle.notifyItemFinishedDrawing(mCurrDoodlePath);
+                }
+                mCurrDoodlePath = null;
+                mCurrPath = null;
+                mDoodle.refresh();
             }
-            if (mDoodle.isOptimizeDrawing()) {
-                mDoodle.notifyItemFinishedDrawing(mCurrDoodlePath);
-            }
-            mCurrDoodlePath = null;
-            mCurrPath = null;
-            mDoodle.refresh();
+
         }
     }
 
