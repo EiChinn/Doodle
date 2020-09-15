@@ -57,6 +57,7 @@ import cn.hzw.doodle.core.IDoodleShape;
 import cn.hzw.doodle.core.IDoodleTouchDetector;
 import cn.hzw.doodle.dialog.DialogController;
 import cn.hzw.doodle.imagepicker.ImageSelectorView;
+import cn.hzw.doodledemo.databinding.DoodleLayoutBinding;
 import cn.hzw.doodledemo.utils.ImgUtils;
 
 /**
@@ -65,6 +66,8 @@ import cn.hzw.doodledemo.utils.ImgUtils;
  * Created by huangziwei(154330138@qq.com) on 2016/9/3.
  */
 public class DoodleActivity extends Activity {
+
+    private DoodleLayoutBinding binding;
 
     public static final String TAG = "Doodle";
     public final static int DEFAULT_MOSAIC_SIZE = 20; // 默认马赛克大小
@@ -194,7 +197,8 @@ public class DoodleActivity extends Activity {
         }
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(cn.hzw.doodle.R.layout.doodle_layout);
+        binding = DoodleLayoutBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         mFrameLayout = (FrameLayout) findViewById(cn.hzw.doodle.R.id.doodle_container);
 
         /*
@@ -630,15 +634,15 @@ public class DoodleActivity extends Activity {
         } else if (v.getId() == cn.hzw.doodle.R.id.btn_arrow) {
             mDoodle.setShape(DoodleShape.ARROW);
         } else if (v.getId() == cn.hzw.doodle.R.id.btn_line) {
-            mDoodle.setShape(DoodleShape.LINE);
+            mDoodle.setShape(DoodleShape.POLYLINE);
         } else if (v.getId() == cn.hzw.doodle.R.id.btn_holl_circle) {
             mDoodle.setShape(DoodleShape.HOLLOW_CIRCLE);
         } else if (v.getId() == cn.hzw.doodle.R.id.btn_fill_circle) {
-            mDoodle.setShape(DoodleShape.FILL_CIRCLE);
+            mDoodle.setShape(DoodleShape.TRIANGLE);
         } else if (v.getId() == cn.hzw.doodle.R.id.btn_holl_rect) {
             mDoodle.setShape(DoodleShape.HOLLOW_RECT);
         } else if (v.getId() == cn.hzw.doodle.R.id.btn_fill_rect) {
-            mDoodle.setShape(DoodleShape.FILL_RECT);
+            mDoodle.setShape(DoodleShape.PENTAGON);
         } else if (v.getId() == cn.hzw.doodle.R.id.btn_mosaic_level1) {
             if (v.isSelected()) {
                 return;
@@ -882,11 +886,11 @@ public class DoodleActivity extends Activity {
         {
             mBtnShapeIds.put(DoodleShape.HAND_WRITE, cn.hzw.doodle.R.id.btn_hand_write);
             mBtnShapeIds.put(DoodleShape.ARROW, cn.hzw.doodle.R.id.btn_arrow);
-            mBtnShapeIds.put(DoodleShape.LINE, cn.hzw.doodle.R.id.btn_line);
+            mBtnShapeIds.put(DoodleShape.POLYLINE, cn.hzw.doodle.R.id.btn_line);
             mBtnShapeIds.put(DoodleShape.HOLLOW_CIRCLE, cn.hzw.doodle.R.id.btn_holl_circle);
-            mBtnShapeIds.put(DoodleShape.FILL_CIRCLE, cn.hzw.doodle.R.id.btn_fill_circle);
+            mBtnShapeIds.put(DoodleShape.TRIANGLE, cn.hzw.doodle.R.id.btn_fill_circle);
             mBtnShapeIds.put(DoodleShape.HOLLOW_RECT, cn.hzw.doodle.R.id.btn_holl_rect);
-            mBtnShapeIds.put(DoodleShape.FILL_RECT, cn.hzw.doodle.R.id.btn_fill_rect);
+            mBtnShapeIds.put(DoodleShape.PENTAGON, cn.hzw.doodle.R.id.btn_fill_rect);
 
         }
 
@@ -1019,6 +1023,14 @@ public class DoodleActivity extends Activity {
                 }
             }
         }
+    }
+
+    public void closeCurrentPolylinePath(View view) {
+        mTouchGestureListener.closeCurrentPath();
+    }
+    public void finishCurrentPolylinePath(View view) {
+        mTouchGestureListener.finishCurrentPath();
+
     }
 
 }

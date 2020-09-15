@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
@@ -8,8 +9,8 @@
     android:orientation="vertical">
 
     <FrameLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
         <include
             android:id="@+id/doodle_title_bar"
@@ -272,7 +273,7 @@
                             android:id="@+id/btn_set_color"
                             android:layout_width="fill_parent"
                             android:layout_height="fill_parent"
-                            android:src="@drawable/ic_brush_24dp"/>
+                            android:src="@drawable/ic_brush_24dp" />
                     </FrameLayout>
                 </LinearLayout>
 
@@ -400,4 +401,43 @@
 
         </FrameLayout>
     </FrameLayout>
-</FrameLayout>
+
+    <TextView
+        android:id="@+id/close_polyline_btn"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/doodle_title_bar_height"
+        android:layout_weight="1"
+        android:background="#88000000"
+        android:gravity="center"
+        android:onClick="closeCurrentPolylinePath"
+        android:text="@string/close_polyline_btn"
+        android:textColor="#ffffff"
+        android:textSize="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/finish_polyline_btn"
+        app:layout_constraintHorizontal_chainStyle="spread_inside"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/finish_polyline_btn"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/doodle_title_bar_height"
+        android:layout_weight="1"
+        android:background="#88000000"
+        android:gravity="center"
+        android:onClick="finishCurrentPolylinePath"
+        android:text="@string/finish_polyline_btn"
+        android:textColor="#ffffff"
+        android:textSize="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/close_polyline_btn" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/polyline_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:constraint_referenced_ids="close_polyline_btn,finish_polyline_btn" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
