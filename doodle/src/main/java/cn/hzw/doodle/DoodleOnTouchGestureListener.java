@@ -139,9 +139,19 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
                 }
 
                 // 初始化绘制
-                mCurrPath = new Path();
-                mCurrPath.moveTo(mDoodle.toX(mTouchX), mDoodle.toY(mTouchY));
+                if (mDoodle.getShape() == DoodleShape.POLYLINE ) {
+                    if (mCurrPath == null) {
+                        mCurrPath = new Path(); // todo not new , use reset or rewind
+                        mCurrPath.moveTo(mDoodle.toX(mTouchX), mDoodle.toY(mTouchY));
+                    }
+                } else {
+                    mCurrPath = new Path(); // todo not new , use reset or rewind
+                    mCurrPath.moveTo(mDoodle.toX(mTouchX), mDoodle.toY(mTouchY));
+                }
+
                 if (mDoodle.getShape() == DoodleShape.HAND_WRITE) { // 手写
+                    mCurrDoodlePath = DoodlePath.toPath(mDoodle, mCurrPath);
+                } else if (mDoodle.getShape() == DoodleShape.POLYLINE) { // 手写
                     mCurrDoodlePath = DoodlePath.toPath(mDoodle, mCurrPath);
                 } else {  // 画图形
                     mCurrDoodlePath = DoodlePath.toShape(mDoodle,
@@ -172,6 +182,13 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
             if (mDoodle.isEditMode()) {
                 limitBound(true);
             }
+        }
+
+        if (mDoodle.getShape() == DoodleShape.POLYLINE) {
+            mCurrPath.lineTo(
+                    mDoodle.toX(mTouchX),
+                    mDoodle.toY(mTouchY));
+            mCurrDoodlePath.updatePath(mCurrPath);
         }
 
         if (mCurrDoodlePath != null) {
@@ -224,6 +241,7 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
                             mDoodle.toX((mTouchX + mLastTouchX) / 2),
                             mDoodle.toY((mTouchY + mLastTouchY) / 2));
                     mCurrDoodlePath.updatePath(mCurrPath);
+                } else if (mDoodle.getShape() == DoodleShape.POLYLINE) {
                 } else {  // 画图形
                     mCurrDoodlePath.updateXY(mDoodle.toX(mTouchDownX), mDoodle.toY(mTouchDownY), mDoodle.toX(mTouchX), mDoodle.toY(mTouchY));
                 }
@@ -535,6 +553,31 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
          * @param y
          */
         void onCreateSelectableItem(IDoodle doodle, float x, float y);
+    }
+
+    public void closeCurrentPath() {
+        if (((DoodleShape) mDoodle.getShape())== DoodleShape.POLYLINE) {
+            mCurrPath.close();
+            mCurrDoodlePath = DoodlePath.toPath(mDoodle, mCurrPath);
+            if (mDoodle.isOptimizeDrawing()) {
+                mDoodle.markItemToOptimizeDrawing(mCurrDoodlePath);
+            } else {
+                mDoodle.addItem(mCurrDoodlePath);
+            }
+            if (mDoodle.isOptimizeDrawing()) {
+                mDoodle.notifyItemFinishedDrawing(mCurrDoodlePath);
+            }
+            mCurrDoodlePath = null;
+            mCurrPath = null;
+            mDoodle.refresh();
+        }
+    }
+
+    public void finishCurrentPath() {
+        if (((DoodleShape) mDoodle.getShape())== DoodleShape.POLYLINE) {
+            mCurrDoodlePath = null;
+            mCurrPath = null;
+        }
     }
 
 }

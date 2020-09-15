@@ -21,6 +21,7 @@ public enum DoodleShape implements IDoodleShape {
     TRIANGLE,
     PENTAGON,
     HEXAGON,
+    POLYLINE,
     FILL_CIRCLE, // 实心圆
     FILL_RECT; // 实心矩形
 
