@@ -12,7 +12,8 @@ import android.os.PersistableBundle;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -24,6 +25,8 @@ import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -65,7 +68,7 @@ import cn.hzw.doodledemo.utils.ImgUtils;
  * （这边代码和ui比较粗糙，主要目的是告诉大家DoodleView的接口具体能实现什么功能，实际需求中的ui和交互需另提别论）
  * Created by huangziwei(154330138@qq.com) on 2016/9/3.
  */
-public class DoodleActivity extends Activity {
+public class DoodleActivity extends AppCompatActivity {
 
     private DoodleLayoutBinding binding;
 
@@ -128,7 +131,8 @@ public class DoodleActivity extends Activity {
     private IDoodle mDoodle;
     private DoodleView mDoodleView;
 
-    private View mBtnHidePanel, mSettingsPanel;
+    private boolean isPanelHide = false;
+    private View mSettingsPanel;
     private View mSelectedEditContainer;
     private TextView mItemScaleTextView;
     private View mBtnColor, mColorContainer;
@@ -141,11 +145,6 @@ public class DoodleActivity extends Activity {
     private AlphaAnimation mViewShowAnimation, mViewHideAnimation; // view隐藏和显示时用到的渐变动画
 
     private DoodleParams mDoodleParams;
-
-    // 触摸屏幕超过一定时间才判断为需要隐藏设置面板
-    private Runnable mHideDelayRunnable;
-    // 触摸屏幕超过一定时间才判断为需要显示设置面板
-    private Runnable mShowDelayRunnable;
 
     private DoodleOnTouchGestureListener mTouchGestureListener;
     private Map<IDoodlePen, Float> mPenSizeMap = new HashMap<>(); //保存每个画笔对应的最新大小
@@ -199,6 +198,7 @@ public class DoodleActivity extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         binding = DoodleLayoutBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        initToolbar();
         mFrameLayout = (FrameLayout) findViewById(cn.hzw.doodle.R.id.doodle_container);
 
         /*
@@ -373,6 +373,59 @@ public class DoodleActivity extends Activity {
         initView();
     }
 
+    private void initToolbar() {
+        setSupportActionBar(binding.toolbar);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_doodle, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_rotate:
+                // 旋转图片
+                if (mRotateAnimator == null) {
+                    mRotateAnimator = new ValueAnimator();
+                    mRotateAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                        @Override
+                        public void onAnimationUpdate(ValueAnimator animation) {
+                            int value = (int) animation.getAnimatedValue();
+                            mDoodle.setDoodleRotation(value);
+                        }
+                    });
+                    mRotateAnimator.setDuration(250);
+                }
+                if (!mRotateAnimator.isRunning()) {
+                    mRotateAnimator.setIntValues(mDoodle.getDoodleRotation(), mDoodle.getDoodleRotation() + 90);
+                    mRotateAnimator.start();
+                }
+
+                break;
+            case R.id.menu_hide_tool_bar:
+                if (isPanelHide) {
+                    showView(mSettingsPanel);
+                    isPanelHide = false;
+                } else {
+                    hideView(mSettingsPanel);
+                    isPanelHide = true;
+                }
+                break;
+            case R.id.menu_save:
+                mDoodle.save();
+                break;
+            case R.id.menu_legend:
+                break;
+
+            default:
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     private boolean canChangeColor(IDoodlePen pen) {
         return pen != DoodlePen.ERASER
                 && pen != DoodlePen.BITMAP
@@ -403,9 +456,6 @@ public class DoodleActivity extends Activity {
                 mDoodle.refresh();
             }
         }, null);
-        if (doodleText == null) {
-            mSettingsPanel.removeCallbacks(mHideDelayRunnable);
-        }
     }
 
     // 添加贴图
@@ -469,7 +519,6 @@ public class DoodleActivity extends Activity {
 
         mSettingsPanel = findViewById(cn.hzw.doodle.R.id.doodle_panel);
 
-        mBtnHidePanel = findViewById(cn.hzw.doodle.R.id.doodle_btn_hide_panel);
 
         mShapeContainer = findViewById(cn.hzw.doodle.R.id.shape_container);
         mPenContainer = findViewById(cn.hzw.doodle.R.id.pen_container);
@@ -480,68 +529,10 @@ public class DoodleActivity extends Activity {
         mBtnColor = DoodleActivity.this.findViewById(cn.hzw.doodle.R.id.btn_set_color);
         mColorContainer = DoodleActivity.this.findViewById(cn.hzw.doodle.R.id.btn_set_color_container);
 
-        mDoodleView.setOnTouchListener(new View.OnTouchListener() {
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                // 隐藏设置面板
-                if (!mBtnHidePanel.isSelected()  // 设置面板没有被隐藏
-                        && mDoodleParams.mChangePanelVisibilityDelay > 0) {
-                    switch (event.getAction() & MotionEvent.ACTION_MASK) {
-                        case MotionEvent.ACTION_DOWN:
-                            mSettingsPanel.removeCallbacks(mHideDelayRunnable);
-                            mSettingsPanel.removeCallbacks(mShowDelayRunnable);
-                            //触摸屏幕超过一定时间才判断为需要隐藏设置面板
-                            mSettingsPanel.postDelayed(mHideDelayRunnable, mDoodleParams.mChangePanelVisibilityDelay);
-                            break;
-                        case MotionEvent.ACTION_CANCEL:
-                        case MotionEvent.ACTION_UP:
-                            mSettingsPanel.removeCallbacks(mHideDelayRunnable);
-                            mSettingsPanel.removeCallbacks(mShowDelayRunnable);
-                            //离开屏幕超过一定时间才判断为需要显示设置面板
-                            mSettingsPanel.postDelayed(mShowDelayRunnable, mDoodleParams.mChangePanelVisibilityDelay);
-                            break;
-                    }
-                }
-
-                return false;
-            }
-        });
-
-        // 长按标题栏显示原图
-        findViewById(cn.hzw.doodle.R.id.doodle_txt_title).setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction() & MotionEvent.ACTION_MASK) {
-                    case MotionEvent.ACTION_DOWN:
-                        v.setPressed(true);
-                        mDoodle.setShowOriginal(true);
-                        break;
-                    case MotionEvent.ACTION_UP:
-                    case MotionEvent.ACTION_CANCEL:
-                        v.setPressed(false);
-                        mDoodle.setShowOriginal(false);
-                        break;
-                }
-                return true;
-            }
-        });
-
         mViewShowAnimation = new AlphaAnimation(0, 1);
         mViewShowAnimation.setDuration(150);
         mViewHideAnimation = new AlphaAnimation(1, 0);
         mViewHideAnimation.setDuration(150);
-        mHideDelayRunnable = new Runnable() {
-            public void run() {
-                hideView(mSettingsPanel);
-            }
-
-        };
-        mShowDelayRunnable = new Runnable() {
-            public void run() {
-                showView(mSettingsPanel);
-            }
-        };
     }
 
     private ValueAnimator mRotateAnimator;
@@ -567,17 +558,6 @@ public class DoodleActivity extends Activity {
             mDoodleView.enableZoomer(!mDoodleView.isEnableZoomer());
         } else if (v.getId() == cn.hzw.doodle.R.id.btn_set_color_container) {
             showPopup(mBtnColor);
-        } else if (v.getId() == cn.hzw.doodle.R.id.doodle_btn_hide_panel) {
-            mSettingsPanel.removeCallbacks(mHideDelayRunnable);
-            mSettingsPanel.removeCallbacks(mShowDelayRunnable);
-            v.setSelected(!v.isSelected());
-            if (!mBtnHidePanel.isSelected()) {
-                showView(mSettingsPanel);
-            } else {
-                hideView(mSettingsPanel);
-            }
-        } else if (v.getId() == cn.hzw.doodle.R.id.doodle_btn_finish) {
-            mDoodle.save();
         } else if (v.getId() == cn.hzw.doodle.R.id.doodle_btn_back) {
             if (mDoodle.getAllItem() == null || mDoodle.getItemCount() == 0) {
                 finish();
@@ -598,24 +578,6 @@ public class DoodleActivity extends Activity {
                             }
                         });
             }
-        } else if (v.getId() == cn.hzw.doodle.R.id.doodle_btn_rotate) {
-            // 旋转图片
-            if (mRotateAnimator == null) {
-                mRotateAnimator = new ValueAnimator();
-                mRotateAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator animation) {
-                        int value = (int) animation.getAnimatedValue();
-                        mDoodle.setDoodleRotation(value);
-                    }
-                });
-                mRotateAnimator.setDuration(250);
-            }
-            if (mRotateAnimator.isRunning()) {
-                return;
-            }
-            mRotateAnimator.setIntValues(mDoodle.getDoodleRotation(), mDoodle.getDoodleRotation() + 90);
-            mRotateAnimator.start();
         } else if (v.getId() == cn.hzw.doodle.R.id.doodle_selectable_edit) {
             if (mTouchGestureListener.getSelectedItem() instanceof DoodleText) {
                 createDoodleText((DoodleText) mTouchGestureListener.getSelectedItem(), -1, -1);

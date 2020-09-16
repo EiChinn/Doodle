@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+    <item
+        android:id="@+id/menu_rotate"
+        android:title="rotate"
+        android:icon="@drawable/doodle_rotate"
+        app:showAsAction="always"
+        />
+    <item
+        android:id="@+id/menu_hide_tool_bar"
+        android:title="hide tool bar"
+        android:icon="@drawable/doodle_btn_effect_panel"
+        app:showAsAction="always"
+
+        />
+    <item
+        android:id="@+id/menu_save"
+        android:title="save"
+        android:icon="@drawable/doodle_btn_finish"
+        app:showAsAction="always"
+
+        />
+    <item
+        android:id="@+id/menu_legend"
+        android:title="legend"
+        android:icon="@drawable/doodle_btn_finish"
+        app:showAsAction="never"
+        />
+</menu>
