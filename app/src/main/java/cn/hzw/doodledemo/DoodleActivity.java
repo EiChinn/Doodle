@@ -28,6 +28,10 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Collection;
@@ -70,9 +74,11 @@ import cn.hzw.doodledemo.utils.ImgUtils;
  * （这边代码和ui比较粗糙，主要目的是告诉大家DoodleView的接口具体能实现什么功能，实际需求中的ui和交互需另提别论）
  * Created by huangziwei(154330138@qq.com) on 2016/9/3.
  */
-public class DoodleActivity extends AppCompatActivity {
+public class DoodleActivity extends AppCompatActivity implements DoodleContract.View {
 
     private DoodleLayoutBinding binding;
+
+    private DoodlePresenter mPresenter;
 
     public static final String TAG = "Doodle";
     public final static int DEFAULT_MOSAIC_SIZE = 20; // 默认马赛克大小
@@ -170,6 +176,9 @@ public class DoodleActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         StatusBarUtil.setStatusBarTranslucent(this, true, false);
+        EventBus.getDefault().register(this);
+        mPresenter = new DoodlePresenter(this);
+
         if (mDoodleParams == null) {
             mDoodleParams = getIntent().getExtras().getParcelable(KEY_PARAMS);
         }
@@ -351,11 +360,8 @@ public class DoodleActivity extends AppCompatActivity {
                 if (mDoodle.getPen() == DoodlePen.TEXT) {
                     // if legend draw it
                     if (isLegend) {
-                        Legend legend = new Legend();
-                        legend.setSymbol("★");
-                        legend.setName("废水监测点");
-                        DoodleLegendText item = new DoodleLegendText(mDoodle, legend.getSymbol(), mDoodle.getSize(), mDoodle.getColor().copy(), x, y);
-                        item.setLegend(legend);
+                        DoodleLegendText item = new DoodleLegendText(mDoodle, currentLegend.symbol, mDoodle.getSize(), mDoodle.getColor().copy(), x, y);
+                        item.setLegend(currentLegend);
                         mDoodle.addItem(item);
 //                        mTouchGestureListener.setSelectedItem(item);
                         refreshLegends(false);
@@ -436,10 +442,8 @@ public class DoodleActivity extends AppCompatActivity {
                 mDoodle.save();
                 break;
             case R.id.menu_legend:
-                mDoodle.setPen(DoodlePen.TEXT);
-                isLegend = true;
-                // setPen
-
+                LegendDialogFragment legendDialogFragment = new LegendDialogFragment();
+                legendDialogFragment.show(getSupportFragmentManager(), "LegendDialogFragment");
 
                 break;
 
@@ -464,7 +468,7 @@ public class DoodleActivity extends AppCompatActivity {
             if (item instanceof DoodleLegendText) {
                 Legend legend = ((DoodleLegendText) item).getLegend();
                 if (legend != null) {
-                    legends.add(legend.getSymbol() + ": " + legend.getName());
+                    legends.add(legend.symbol + ": " + legend.name);
                 }
 
             }
@@ -491,9 +495,8 @@ public class DoodleActivity extends AppCompatActivity {
 
         } else {
             legendText.setText(legendStrs.toString());
-        }
-        if (refresh) {
-            mDoodle.refresh();
+            mDoodleView.markItemToOptimizeDrawing(legendText);
+            mDoodleView.notifyItemFinishedDrawing(legendText);
         }
 
 
@@ -669,11 +672,11 @@ public class DoodleActivity extends AppCompatActivity {
             mDoodle.setShape(DoodleShape.ARROW);
         } else if (v.getId() == cn.hzw.doodle.R.id.btn_line) {
             mDoodle.setShape(DoodleShape.POLYLINE);
+            binding.polylineGroup.setVisibility(View.VISIBLE);
         } else if (v.getId() == cn.hzw.doodle.R.id.btn_holl_circle) {
             mDoodle.setShape(DoodleShape.HOLLOW_CIRCLE);
         } else if (v.getId() == cn.hzw.doodle.R.id.btn_fill_circle) {
             mDoodle.setShape(DoodleShape.TRIANGLE);
-            binding.polylineGroup.setVisibility(View.VISIBLE);
         } else if (v.getId() == cn.hzw.doodle.R.id.btn_holl_rect) {
             mDoodle.setShape(DoodleShape.HOLLOW_RECT);
         } else if (v.getId() == cn.hzw.doodle.R.id.btn_fill_rect) {
@@ -1068,4 +1071,18 @@ public class DoodleActivity extends AppCompatActivity {
 
     }
 
+    private Legend currentLegend;
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onSetLegend(Legend legend) {
+        currentLegend = legend;
+        mDoodle.setPen(DoodlePen.TEXT);
+        isLegend = true;
+        // setPen
+    }
+
+    @Override
+    protected void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
+    }
 }

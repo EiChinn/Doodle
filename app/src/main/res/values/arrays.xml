@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="LegendSymbol">
+        <item>★:废水监测点</item>
+        <item>☆:地表水、地下水监测点</item>
+        <item>◎:废气监测点</item>
+        <item>○:无组织废气监测点</item>
+        <item>▲:厂界噪声监测点</item>
+        <item>△:敏感点噪声监测点</item>
+        <item>■:固体废物监测点</item>
+    </string-array>
+</resources>
