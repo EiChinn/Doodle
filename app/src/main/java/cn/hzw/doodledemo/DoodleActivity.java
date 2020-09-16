@@ -32,8 +32,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import cn.forward.androids.utils.ImageUtils;
 import cn.forward.androids.utils.LogUtil;
@@ -132,6 +134,7 @@ public class DoodleActivity extends AppCompatActivity {
     private DoodleView mDoodleView;
 
     private boolean isPanelHide = false;
+    private boolean isLegend = false;
     private View mSettingsPanel;
     private View mSelectedEditContainer;
     private TextView mItemScaleTextView;
@@ -199,6 +202,7 @@ public class DoodleActivity extends AppCompatActivity {
         binding = DoodleLayoutBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         initToolbar();
+        resetState();
         mFrameLayout = (FrameLayout) findViewById(cn.hzw.doodle.R.id.doodle_container);
 
         /*
@@ -345,7 +349,20 @@ public class DoodleActivity extends AppCompatActivity {
             @Override
             public void onCreateSelectableItem(IDoodle doodle, float x, float y) {
                 if (mDoodle.getPen() == DoodlePen.TEXT) {
-                    createDoodleText(null, x, y);
+                    // if legend draw it
+                    if (isLegend) {
+                        Legend legend = new Legend();
+                        legend.setSymbol("★");
+                        legend.setName("废水监测点");
+                        DoodleLegendText item = new DoodleLegendText(mDoodle, legend.getSymbol(), mDoodle.getSize(), mDoodle.getColor().copy(), x, y);
+                        item.setLegend(legend);
+                        mDoodle.addItem(item);
+//                        mTouchGestureListener.setSelectedItem(item);
+                        refreshLegends(false);
+                        mDoodle.refresh();
+                    } else {
+                        createDoodleText(null, x, y);
+                    }
                 } else if (mDoodle.getPen() == DoodlePen.BITMAP) {
                     createDoodleBitmap(null, x, y);
                 }
@@ -385,6 +402,7 @@ public class DoodleActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        resetState();
         switch (item.getItemId()) {
             case R.id.menu_rotate:
                 // 旋转图片
@@ -418,6 +436,11 @@ public class DoodleActivity extends AppCompatActivity {
                 mDoodle.save();
                 break;
             case R.id.menu_legend:
+                mDoodle.setPen(DoodlePen.TEXT);
+                isLegend = true;
+                // setPen
+
+
                 break;
 
             default:
@@ -431,6 +454,49 @@ public class DoodleActivity extends AppCompatActivity {
                 && pen != DoodlePen.BITMAP
                 && pen != DoodlePen.COPY
                 && pen != DoodlePen.MOSAIC;
+    }
+
+    private DoodleLegendText legendText;
+    private void refreshLegends(boolean refresh) {
+        List<IDoodleItem> items = mDoodle.getAllItem();
+        Set<String> legends = new HashSet<>();
+        for (IDoodleItem item : items) {
+            if (item instanceof DoodleLegendText) {
+                Legend legend = ((DoodleLegendText) item).getLegend();
+                if (legend != null) {
+                    legends.add(legend.getSymbol() + ": " + legend.getName());
+                }
+
+            }
+        }
+
+        StringBuilder legendStrs = new StringBuilder();
+        for (String legend : legends) {
+            legendStrs.append(legend + "\n");
+        }
+
+        if (legendText == null) {
+
+            legendText = new DoodleLegendText(
+                    mDoodle,
+                    legendStrs.toString(),
+                    mDoodle.getSize(),
+                    mDoodle.getColor().copy(),
+                    mDoodleView.getWidth() - 50,
+                    mDoodleView.getHeight() - 50
+            );
+            legendText.setTextLeftAlign(false);
+            mDoodle.addItem(legendText);
+//                        mTouchGestureListener.setSelectedItem(item);
+
+        } else {
+            legendText.setText(legendStrs.toString());
+        }
+        if (refresh) {
+            mDoodle.refresh();
+        }
+
+
     }
 
     // 添加文字
@@ -537,7 +603,13 @@ public class DoodleActivity extends AppCompatActivity {
 
     private ValueAnimator mRotateAnimator;
 
+    private void resetState() {
+        binding.polylineGroup.setVisibility(View.GONE);
+        isLegend = false;
+    }
+
     public void onClick(final View v) {
+        resetState();
         if (v.getId() == cn.hzw.doodle.R.id.btn_pen_hand) {
             mDoodle.setPen(DoodlePen.BRUSH);
         } else if (v.getId() == cn.hzw.doodle.R.id.btn_pen_mosaic) {
@@ -601,6 +673,7 @@ public class DoodleActivity extends AppCompatActivity {
             mDoodle.setShape(DoodleShape.HOLLOW_CIRCLE);
         } else if (v.getId() == cn.hzw.doodle.R.id.btn_fill_circle) {
             mDoodle.setShape(DoodleShape.TRIANGLE);
+            binding.polylineGroup.setVisibility(View.VISIBLE);
         } else if (v.getId() == cn.hzw.doodle.R.id.btn_holl_rect) {
             mDoodle.setShape(DoodleShape.HOLLOW_RECT);
         } else if (v.getId() == cn.hzw.doodle.R.id.btn_fill_rect) {
