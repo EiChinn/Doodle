@@ -23,10 +23,12 @@ public class DoodleLegendText extends DoodleRotatableItemBase {
     private final TextPaint mPaint = new TextPaint();
     private String mText;
     private StaticLayout staticLayout;
+    private int maxWidth;
 
     public DoodleLegendText(IDoodle doodle, String text, float size, IDoodleColor color,
-                            float x, float y) {
+                            float x, float y, int maxWidth) {
         super(doodle, -doodle.getDoodleRotation(), x, y);
+        this.maxWidth = maxWidth;
         setPen(DoodlePen.TEXT);
         mText = text;
         setSize(size);
@@ -55,7 +57,7 @@ public class DoodleLegendText extends DoodleRotatableItemBase {
         }
         mPaint.setTextSize(getSize());
         mPaint.setStyle(Paint.Style.FILL);
-        staticLayout = new StaticLayout(mText, mPaint, 600,
+        staticLayout = new StaticLayout(mText, mPaint, maxWidth,
                 Layout.Alignment.ALIGN_NORMAL, 1, 0, true);
         rect.top = 0;
         rect.left = 0;
