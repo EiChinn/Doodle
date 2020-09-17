@@ -3,8 +3,6 @@ package cn.hzw.doodledemo;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.text.Layout;
-import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.text.TextUtils;
 
@@ -14,18 +12,18 @@ import cn.hzw.doodle.core.IDoodle;
 import cn.hzw.doodle.core.IDoodleColor;
 
 /**
- * 图例，显示在右下角
+ * 图例标识 如： ★， ▲2#
  * Created by huangziwei on 2017/3/16.
  */
 
-public class DoodleLegendText extends DoodleRotatableItemBase {
+public class DoodleLegendSymbolText extends DoodleRotatableItemBase {
 
+    private Rect mRect = new Rect();
     private final TextPaint mPaint = new TextPaint();
     private String mText;
-    private StaticLayout staticLayout;
+    private Legend legend;
 
-    public DoodleLegendText(IDoodle doodle, String text, float size, IDoodleColor color,
-                            float x, float y) {
+    public DoodleLegendSymbolText(IDoodle doodle, String text, float size, IDoodleColor color, float x, float y) {
         super(doodle, -doodle.getDoodleRotation(), x, y);
         setPen(DoodlePen.TEXT);
         mText = text;
@@ -40,9 +38,9 @@ public class DoodleLegendText extends DoodleRotatableItemBase {
 
     public void setText(String text) {
         mText = text;
-        resetBounds(getBounds());
-        setPivotX(getLocation().x + getBounds().width() / 2.0f);
-        setPivotY(getLocation().y + getBounds().height() / 2.0f);
+        resetBounds(mRect);
+        setPivotX(getLocation().x + mRect.width() / 2.0f);
+        setPivotY(getLocation().y + mRect.height() / 2.0f);
         resetBoundsScaled(getBounds());
 
         refresh();
@@ -55,12 +53,8 @@ public class DoodleLegendText extends DoodleRotatableItemBase {
         }
         mPaint.setTextSize(getSize());
         mPaint.setStyle(Paint.Style.FILL);
-        staticLayout = new StaticLayout(mText, mPaint, 600,
-                Layout.Alignment.ALIGN_NORMAL, 1, 0, true);
-        rect.top = 0;
-        rect.left = 0;
-        rect.right = staticLayout.getWidth();
-        rect.bottom = staticLayout.getHeight();
+        mPaint.getTextBounds(mText, 0, mText.length(), rect);
+        rect.offset(0, rect.height());
     }
 
     @Override
@@ -68,8 +62,18 @@ public class DoodleLegendText extends DoodleRotatableItemBase {
         getColor().config(this, mPaint);
         mPaint.setTextSize(getSize());
         mPaint.setStyle(Paint.Style.FILL);
-        // StaticLayout的绘制原点就在左上角，所以这里不用做translate
-        staticLayout.draw(canvas);
+        canvas.save();
+        canvas.translate(0, getBounds().height() / getScale());
+        canvas.drawText(mText, 0, 0, mPaint);
+        canvas.restore();
+    }
+
+    public Legend getLegend() {
+        return legend;
+    }
+
+    public void setLegend(Legend legend) {
+        this.legend = legend;
     }
 }
 

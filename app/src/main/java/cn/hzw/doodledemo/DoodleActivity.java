@@ -360,7 +360,7 @@ public class DoodleActivity extends AppCompatActivity implements DoodleContract.
                 if (mDoodle.getPen() == DoodlePen.TEXT) {
                     // if legend draw it
                     if (isLegend) {
-                        DoodleLegendText item = new DoodleLegendText(mDoodle, currentLegend.symbol, mDoodle.getSize(), mDoodle.getColor().copy(), x, y);
+                        DoodleLegendSymbolText item = new DoodleLegendSymbolText(mDoodle, currentLegend.symbol, mDoodle.getSize(), mDoodle.getColor().copy(), x, y);
                         item.setLegend(currentLegend);
                         mDoodle.addItem(item);
 //                        mTouchGestureListener.setSelectedItem(item);
@@ -465,8 +465,8 @@ public class DoodleActivity extends AppCompatActivity implements DoodleContract.
         List<IDoodleItem> items = mDoodle.getAllItem();
         Set<String> legends = new HashSet<>();
         for (IDoodleItem item : items) {
-            if (item instanceof DoodleLegendText) {
-                Legend legend = ((DoodleLegendText) item).getLegend();
+            if (item instanceof DoodleLegendSymbolText) {
+                Legend legend = ((DoodleLegendSymbolText) item).getLegend();
                 if (legend != null) {
                     legends.add(legend.symbol + ": " + legend.name);
                 }
@@ -486,15 +486,18 @@ public class DoodleActivity extends AppCompatActivity implements DoodleContract.
                     legendStrs.toString(),
                     mDoodle.getSize(),
                     mDoodle.getColor().copy(),
-                    mDoodleView.getWidth() - 50,
-                    mDoodleView.getHeight() - 50
+                    0,
+                    0
             );
-            legendText.setTextLeftAlign(false);
+            legendText.setLocation(mDoodleView.getWidth() - legendText.getBounds().width(),
+                    mDoodleView.getHeight() - legendText.getBounds().height());
             mDoodle.addItem(legendText);
 //                        mTouchGestureListener.setSelectedItem(item);
 
         } else {
             legendText.setText(legendStrs.toString());
+            legendText.setLocation(mDoodleView.getWidth() - legendText.getBounds().width(),
+                    mDoodleView.getHeight() - legendText.getBounds().height());
             mDoodleView.markItemToOptimizeDrawing(legendText);
             mDoodleView.notifyItemFinishedDrawing(legendText);
         }
@@ -633,26 +636,6 @@ public class DoodleActivity extends AppCompatActivity implements DoodleContract.
             mDoodleView.enableZoomer(!mDoodleView.isEnableZoomer());
         } else if (v.getId() == cn.hzw.doodle.R.id.btn_set_color_container) {
             showPopup(mBtnColor);
-        } else if (v.getId() == cn.hzw.doodle.R.id.doodle_btn_back) {
-            if (mDoodle.getAllItem() == null || mDoodle.getItemCount() == 0) {
-                finish();
-                return;
-            }
-            if (!(DoodleParams.getDialogInterceptor() != null
-                    && DoodleParams.getDialogInterceptor().onShow(DoodleActivity.this, mDoodle, DoodleParams.DialogType.SAVE))) {
-                DialogController.showMsgDialog(DoodleActivity.this, getString(cn.hzw.doodle.R.string.doodle_saving_picture), null, getString(cn.hzw.doodle.R.string.doodle_cancel),
-                        getString(cn.hzw.doodle.R.string.doodle_save), new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                mDoodle.save();
-                            }
-                        }, new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                finish();
-                            }
-                        });
-            }
         } else if (v.getId() == cn.hzw.doodle.R.id.doodle_selectable_edit) {
             if (mTouchGestureListener.getSelectedItem() instanceof DoodleText) {
                 createDoodleText((DoodleText) mTouchGestureListener.getSelectedItem(), -1, -1);
@@ -740,7 +723,25 @@ public class DoodleActivity extends AppCompatActivity implements DoodleContract.
 
     @Override
     public void onBackPressed() { // 返回键监听
-        findViewById(cn.hzw.doodle.R.id.doodle_btn_back).performClick();
+        if (mDoodle.getAllItem() == null || mDoodle.getItemCount() == 0) {
+            finish();
+            return;
+        }
+        if (!(DoodleParams.getDialogInterceptor() != null
+                && DoodleParams.getDialogInterceptor().onShow(DoodleActivity.this, mDoodle, DoodleParams.DialogType.SAVE))) {
+            DialogController.showMsgDialog(DoodleActivity.this, getString(cn.hzw.doodle.R.string.doodle_saving_picture), null, getString(cn.hzw.doodle.R.string.doodle_cancel),
+                    getString(cn.hzw.doodle.R.string.doodle_save), new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            mDoodle.save();
+                        }
+                    }, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            finish();
+                        }
+                    });
+        }
     }
 
     private void showView(View view) {
