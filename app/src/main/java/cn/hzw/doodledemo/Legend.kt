@@ -2,7 +2,8 @@ package cn.hzw.doodledemo
 
 data class Legend(
         @JvmField var symbol: String = "",
-        @JvmField var name: String = ""
+        @JvmField var name: String = "",
+        @JvmField val createTime: Long = System.currentTimeMillis()
 ) {
 
 

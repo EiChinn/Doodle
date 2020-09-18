@@ -42,8 +42,8 @@ import java.util.*
 class DoodleActivity : AppCompatActivity(), DoodleContract.View {
     private lateinit var binding: DoodleLayoutBinding
     private var mPresenter: DoodlePresenter? = null
-    private var mDoodle: IDoodle? = null
-    private var mDoodleView: DoodleView? = null
+    private lateinit var mDoodle: IDoodle
+    private lateinit var mDoodleView: DoodleView
     private var isPanelHide = false
     private var isLegend = false
     private var mSettingsPanel: View? = null
@@ -234,19 +234,20 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
             }
 
             override fun onCreateSelectableItem(doodle: IDoodle, x: Float, y: Float) {
-                if (mDoodle!!.pen === DoodlePen.TEXT) {
+                if (mDoodle.pen === DoodlePen.TEXT) {
                     // if legend draw it
                     if (isLegend) {
                         val item = DoodleLegendSymbolText(mDoodle, currentLegend!!.symbol, mDoodle!!.size, mDoodle!!.color.copy(), x, y)
                         item.legend = currentLegend
-                        mDoodle!!.addItem(item)
+                        mDoodle.addItem(item)
                         //                        mTouchGestureListener.setSelectedItem(item);
-                        refreshLegends(false)
-                        mDoodle!!.refresh()
+                        refreshLegendIndex()
+                        refreshLegends()
+                        mDoodle.refresh()
                     } else {
                         createDoodleText(null, x, y)
                     }
-                } else if (mDoodle!!.pen === DoodlePen.BITMAP) {
+                } else if (mDoodle.pen === DoodlePen.BITMAP) {
                     createDoodleBitmap(null, x, y)
                 }
             }
@@ -317,10 +318,36 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
     private fun canChangeColor(pen: IDoodlePen): Boolean {
         return pen !== DoodlePen.ERASER && pen !== DoodlePen.BITMAP && pen !== DoodlePen.COPY && pen !== DoodlePen.MOSAIC
     }
+    private fun refreshLegendIndex() {
+        val currentLegendGroup = mDoodle.allItem
+                .filterIsInstance<DoodleLegendSymbolText>().filter { it.legend.symbol == currentLegend!!.symbol }
+        val sortedLegends = currentLegendGroup.sortedBy { it.legend.createTime }.toMutableList()
 
+        sortedLegends.forEachIndexed { index, doodleLegendSymbolText ->
+            if (index == 0) {
+                if (doodleLegendSymbolText.text != doodleLegendSymbolText.legend.symbol) {
+                    doodleLegendSymbolText.text = doodleLegendSymbolText.legend.symbol
+                    mDoodleView.markItemToOptimizeDrawing(doodleLegendSymbolText)
+                    mDoodleView.notifyItemFinishedDrawing(doodleLegendSymbolText)
+                }
+
+            } else {
+                if (doodleLegendSymbolText.text != "${doodleLegendSymbolText.legend.symbol}#$index") {
+                    doodleLegendSymbolText.text = "${doodleLegendSymbolText.legend.symbol}#$index"
+                    mDoodleView.markItemToOptimizeDrawing(doodleLegendSymbolText)
+                    mDoodleView.notifyItemFinishedDrawing(doodleLegendSymbolText)
+                }
+            }
+
+
+        }
+    }
     private var legendText: DoodleLegendText? = null
-    private fun refreshLegends(refresh: Boolean) {
-        val items = mDoodle!!.allItem
+    private fun refreshLegends() {
+        val legendStrs= mDoodle.allItem.filterIsInstance<DoodleLegendSymbolText>()
+                .distinctBy { it.legend.symbol }
+                .joinToString(separator = "\n") { it.legend.symbol + ": " + it.legend.name}
+        val items = mDoodle.allItem
         val legends: MutableSet<String> = HashSet()
         for (item in items) {
             if (item is DoodleLegendSymbolText) {
@@ -330,39 +357,32 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                 }
             }
         }
-        val legendStrs = StringBuilder()
-        for (legend in legends) {
-            legendStrs.append("""
-    $legend
-
-    """.trimIndent())
-        }
         if (legendText == null) {
-            val maxWidth = mDoodleView!!.toX(600.0f).toInt()
+            val maxWidth = mDoodleView.toX(600.0f).toInt()
             legendText = DoodleLegendText(
                     mDoodle,
-                    legendStrs.toString(),
-                    mDoodle!!.size,
-                    mDoodle!!.color.copy(),
+                    legendStrs,
+                    mDoodle.size,
+                    mDoodle.color.copy(),
                     0.0f,
                     0.0f,
                     maxWidth
             )
-            legendText!!.text = legendStrs.toString()
-            val locationX = mDoodleView!!.toX(mDoodleView!!.width - 600.0f)
+            legendText!!.text = legendStrs
+            val locationX = mDoodleView.toX(mDoodleView.width - 600.0f)
             // 不管图片怎么缩放，仍然需要同样高度的像素
-            val locationY = mDoodleView!!.toY(mDoodleView!!.height.toFloat()) - legendText!!.bounds.height().toFloat()
+            val locationY = mDoodleView.toY(mDoodleView.height.toFloat()) - legendText!!.bounds.height().toFloat()
             legendText!!.setLocation(locationX, locationY)
-            mDoodle!!.addItem(legendText)
+            mDoodle.addItem(legendText)
             //                        mTouchGestureListener.setSelectedItem(item);
         } else {
-            legendText!!.text = legendStrs.toString()
-            val locationX = mDoodleView!!.toX(mDoodleView!!.width - 600.0f)
+            legendText!!.text = legendStrs
+            val locationX = mDoodleView.toX(mDoodleView.width - 600.0f)
             // 不管图片怎么缩放，仍然需要同样高度的像素
-            val locationY = mDoodleView!!.toY(mDoodleView!!.height.toFloat()) - legendText!!.bounds.height().toFloat()
+            val locationY = mDoodleView.toY(mDoodleView.height.toFloat()) - legendText!!.bounds.height().toFloat()
             legendText!!.setLocation(locationX, locationY)
-            mDoodleView!!.markItemToOptimizeDrawing(legendText)
-            mDoodleView!!.notifyItemFinishedDrawing(legendText)
+            mDoodleView.markItemToOptimizeDrawing(legendText)
+            mDoodleView.notifyItemFinishedDrawing(legendText)
         }
     }
 
@@ -633,7 +653,9 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
     /**
      * 包裹DoodleView，监听相应的设置接口，以改变UI状态
      */
-    private inner class DoodleViewWrapper(context: Context?, bitmap: Bitmap?, optimizeDrawing: Boolean, listener: IDoodleListener?) : DoodleView(context, bitmap, optimizeDrawing, listener) {
+    private inner class DoodleViewWrapper(context: Context?, bitmap: Bitmap?,
+                                          optimizeDrawing: Boolean, listener: IDoodleListener?
+    ) : DoodleView(context, bitmap, optimizeDrawing, listener) {
         private val mBtnPenIds: MutableMap<IDoodlePen, Int> = HashMap()
         override fun setPen(pen: IDoodlePen) {
             val oldPen = getPen()
