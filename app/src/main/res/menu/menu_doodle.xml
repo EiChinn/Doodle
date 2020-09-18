@@ -29,4 +29,10 @@
         android:icon="@drawable/doodle_btn_finish"
         app:showAsAction="never"
         />
+    <item
+        android:id="@+id/menu_test_point_list"
+        android:title="Test Point List"
+        android:icon="@drawable/doodle_btn_finish"
+        app:showAsAction="never"
+        />
 </menu>

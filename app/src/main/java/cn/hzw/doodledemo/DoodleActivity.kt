@@ -310,6 +310,9 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                 val legendDialogFragment = LegendDialogFragment()
                 legendDialogFragment.show(supportFragmentManager, "LegendDialogFragment")
             }
+            R.id.menu_test_point_list -> {
+                displayTestPointList()
+            }
             else -> {
             }
         }
@@ -320,9 +323,11 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
         return pen !== DoodlePen.ERASER && pen !== DoodlePen.BITMAP && pen !== DoodlePen.COPY && pen !== DoodlePen.MOSAIC
     }
     private fun refreshLegendIndex() {
-        val currentLegendGroup = mDoodle.allItem
-                .filterIsInstance<DoodleLegendSymbolText>().filter { it.legend.symbol == currentLegend!!.symbol }
-        val sortedLegends = currentLegendGroup.sortedBy { it.legend.createTime }.toMutableList()
+        val sortedLegends = mDoodle.allItem
+                .filterIsInstance<DoodleLegendSymbolText>()
+                .filter { it.legend.symbol == currentLegend!!.symbol }
+                .sortedBy { it.legend.createTime }
+                .toMutableList()
 
         sortedLegends.forEachIndexed { index, doodleLegendSymbolText ->
             if (index == 0) {
@@ -345,8 +350,10 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
     }
     private var legendText: DoodleLegendText? = null
     private fun refreshLegends() {
-        val legendStrs= mDoodle.allItem.filterIsInstance<DoodleLegendSymbolText>()
+        val legendStrs= mDoodle.allItem
+                .filterIsInstance<DoodleLegendSymbolText>()
                 .distinctBy { it.legend.symbol }
+                .sortedBy { it.legend.symbol }
                 .joinToString(separator = "\n") { it.legend.symbol + ": " + it.legend.name}
         val items = mDoodle.allItem
         val legends: MutableSet<String> = HashSet()
@@ -384,6 +391,42 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
             legendText!!.setLocation(locationX, locationY)
             mDoodleView.markItemToOptimizeDrawing(legendText)
             mDoodleView.notifyItemFinishedDrawing(legendText)
+        }
+    }
+
+    private var testPointListText: DoodleLegendText? = null
+    private val testPointListTextMargin = 10.0f
+    private fun displayTestPointList() {
+        val testPointListStr = mDoodle.allItem
+                .filterIsInstance<DoodleLegendSymbolText>()
+                .sortedWith(compareBy ( {it.legend.symbol}, {it.legend.createTime}))
+                .joinToString(separator = "\n") { it.text }
+        if (testPointListText == null) {
+            val maxWidth = mDoodleView.toX(600.0f).toInt()
+            testPointListText = DoodleLegendText(
+                    mDoodle,
+                    testPointListStr,
+                    mDoodle.size,
+                    mDoodle.color.copy(),
+                    0.0f,
+                    0.0f,
+                    maxWidth
+            )
+            testPointListText!!.text = testPointListStr
+            val locationX = testPointListTextMargin
+            // 不管图片怎么缩放，仍然需要同样高度的像素
+            val locationY = mDoodleView.toY(mDoodleView.height.toFloat()) - testPointListText!!.bounds.height().toFloat()
+            testPointListText!!.setLocation(locationX, locationY)
+            mDoodle.addItem(testPointListText)
+            //                        mTouchGestureListener.setSelectedItem(item);
+        } else {
+            testPointListText!!.text = testPointListStr
+            val locationX = testPointListTextMargin
+            // 不管图片怎么缩放，仍然需要同样高度的像素
+            val locationY = mDoodleView.toY(mDoodleView.height.toFloat()) - testPointListText!!.bounds.height().toFloat()
+            testPointListText!!.setLocation(locationX, locationY)
+            mDoodleView.markItemToOptimizeDrawing(testPointListText)
+            mDoodleView.notifyItemFinishedDrawing(testPointListText)
         }
     }
 
