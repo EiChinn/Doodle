@@ -211,6 +211,7 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                     mDoodle!!.pen = selectableItem.pen
                     mDoodle!!.color = selectableItem.color
                     mDoodle!!.size = selectableItem.size
+                    binding.doodleSelectableEditContainer.visibility = View.VISIBLE
                     binding.itemScale.text = "${(selectableItem.scale * 100 + 0.5f).toInt()}%"
                     selectableItem.addItemListener(mIDoodleItemListener)
                 } else {
@@ -494,8 +495,12 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                 createDoodleBitmap(mTouchGestureListener!!.selectedItem as DoodleBitmap, -1f, -1f)
             }
         } else if (v.id == cn.hzw.doodle.R.id.doodle_selectable_remove) {
-            mDoodle!!.removeItem(mTouchGestureListener!!.selectedItem)
+            val needRefreshLegendIndex = mTouchGestureListener!!.selectedItem is DoodleLegendSymbolText
+            mDoodle.removeItem(mTouchGestureListener!!.selectedItem)
             mTouchGestureListener!!.selectedItem = null
+            if (needRefreshLegendIndex) {
+                refreshLegendIndex()
+            }
         } else if (v.id == cn.hzw.doodle.R.id.doodle_selectable_top) {
             mDoodle!!.topItem(mTouchGestureListener!!.selectedItem)
         } else if (v.id == cn.hzw.doodle.R.id.doodle_selectable_bottom) {
