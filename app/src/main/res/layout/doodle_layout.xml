@@ -202,15 +202,6 @@
                             android:scaleType="centerInside"
                             android:src="@drawable/doodle_ic_move"
                             android:visibility="visible" />
-
-                        <ImageView
-                            android:id="@+id/btn_zoomer"
-                            android:layout_width="@dimen/doodle_btn_pen_size"
-                            android:layout_height="@dimen/doodle_btn_pen_size"
-                            android:background="@drawable/doodle_btn_effect_round"
-                            android:onClick="onClick"
-                            android:scaleType="centerInside"
-                            android:src="@drawable/doodle_ic_zoomer" />
                     </LinearLayout>
 
                     <LinearLayout

@@ -163,9 +163,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                 mDoodle!!.pen = DoodlePen.BRUSH
                 mDoodle!!.shape = DoodleShape.HAND_WRITE
                 mDoodle!!.color = DoodleColor(mDoodleParams!!.mPaintColor)
-                if (mDoodleParams!!.mZoomerScale <= 0) {
-                    findViewById<View>(cn.hzw.doodle.R.id.btn_zoomer).visibility = View.GONE
-                }
                 mDoodle!!.zoomerScale = mDoodleParams!!.mZoomerScale
                 mTouchGestureListener!!.isSupportScaleItem = mDoodleParams!!.mSupportScaleItem
 
@@ -517,8 +514,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
             mDoodleView!!.isEditMode = !mDoodleView!!.isEditMode
         } else if (v.id == cn.hzw.doodle.R.id.btn_undo) {
             mDoodle!!.undo()
-        } else if (v.id == cn.hzw.doodle.R.id.btn_zoomer) {
-            mDoodleView!!.enableZoomer(!mDoodleView!!.isEnableZoomer)
         } else if (v.id == cn.hzw.doodle.R.id.btn_set_color_container) {
             showPopup(mBtnColor)
         } else if (v.id == cn.hzw.doodle.R.id.doodle_selectable_edit) {
@@ -721,14 +716,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                 if (mTouchGestureListener!!.selectedItem != null) {
                     mTouchGestureListener!!.selectedItem.color = getColor().copy()
                 }
-            }
-        }
-
-        override fun enableZoomer(enable: Boolean) {
-            super.enableZoomer(enable)
-            this@DoodleActivity.findViewById<View>(cn.hzw.doodle.R.id.btn_zoomer).isSelected = enable
-            if (enable) {
-                Toast.makeText(this@DoodleActivity, "x" + mDoodleParams!!.mZoomerScale, Toast.LENGTH_SHORT).show()
             }
         }
 
