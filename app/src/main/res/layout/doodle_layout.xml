@@ -62,17 +62,6 @@
                             android:visibility="visible" />
 
                         <ImageView
-                            android:id="@+id/btn_pen_copy"
-                            android:layout_width="@dimen/doodle_btn_pen_size"
-                            android:layout_height="@dimen/doodle_btn_pen_size"
-                            android:layout_marginRight="5dp"
-                            android:background="@drawable/doodle_btn_effect_round"
-                            android:onClick="onClick"
-                            android:scaleType="centerInside"
-                            android:src="@drawable/doodle_ic_copy"
-                            android:visibility="visible" />
-
-                        <ImageView
                             android:id="@+id/btn_pen_eraser"
                             android:layout_width="@dimen/doodle_btn_pen_size"
                             android:layout_height="@dimen/doodle_btn_pen_size"

@@ -171,7 +171,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
 
                 // 每个画笔的初始值
                 mPenSizeMap[DoodlePen.BRUSH] = mDoodle!!.size
-                mPenSizeMap[DoodlePen.COPY] = DEFAULT_COPY_SIZE * mDoodle!!.unitSize
                 mPenSizeMap[DoodlePen.ERASER] = mDoodle!!.size
                 mPenSizeMap[DoodlePen.TEXT] = DEFAULT_TEXT_SIZE * mDoodle!!.unitSize
                 mPenSizeMap[DoodlePen.BITMAP] = DEFAULT_BITMAP_SIZE * mDoodle!!.unitSize
@@ -316,7 +315,7 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
     }
 
     private fun canChangeColor(pen: IDoodlePen): Boolean {
-        return pen !== DoodlePen.ERASER && pen !== DoodlePen.BITMAP && pen !== DoodlePen.COPY
+        return pen !== DoodlePen.ERASER && pen !== DoodlePen.BITMAP
     }
     private fun refreshLegendIndex() {
         val sortedLegends = mDoodle.allItem
@@ -508,8 +507,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
         resetState()
         if (v.id == cn.hzw.doodle.R.id.btn_pen_hand) {
             mDoodle!!.pen = DoodlePen.BRUSH
-        } else if (v.id == cn.hzw.doodle.R.id.btn_pen_copy) {
-            mDoodle!!.pen = DoodlePen.COPY
         } else if (v.id == cn.hzw.doodle.R.id.btn_pen_eraser) {
             mDoodle!!.pen = DoodlePen.ERASER
         } else if (v.id == cn.hzw.doodle.R.id.btn_pen_text) {
@@ -676,7 +673,7 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                 }
             } else {
                 mShapeContainer!!.visibility = VISIBLE
-                if (pen === DoodlePen.COPY || pen === DoodlePen.ERASER) {
+                if (pen === DoodlePen.ERASER) {
                     mColorContainer!!.visibility = GONE
                 } else {
                     mColorContainer!!.visibility = VISIBLE
@@ -803,7 +800,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
 
         init {
             mBtnPenIds[DoodlePen.BRUSH] = cn.hzw.doodle.R.id.btn_pen_hand
-            mBtnPenIds[DoodlePen.COPY] = cn.hzw.doodle.R.id.btn_pen_copy
             mBtnPenIds[DoodlePen.ERASER] = cn.hzw.doodle.R.id.btn_pen_eraser
             mBtnPenIds[DoodlePen.TEXT] = cn.hzw.doodle.R.id.btn_pen_text
             mBtnPenIds[DoodlePen.BITMAP] = cn.hzw.doodle.R.id.btn_pen_bitmap
