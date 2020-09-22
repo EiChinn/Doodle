@@ -62,17 +62,6 @@
                             android:visibility="visible" />
 
                         <ImageView
-                            android:id="@+id/btn_pen_mosaic"
-                            android:layout_width="@dimen/doodle_btn_pen_size"
-                            android:layout_height="@dimen/doodle_btn_pen_size"
-                            android:layout_marginRight="5dp"
-                            android:background="@drawable/doodle_btn_effect_round"
-                            android:onClick="onClick"
-                            android:scaleType="centerInside"
-                            android:src="@drawable/doodle_ic_mosaic"
-                            android:visibility="visible" />
-
-                        <ImageView
                             android:id="@+id/btn_pen_copy"
                             android:layout_width="@dimen/doodle_btn_pen_size"
                             android:layout_height="@dimen/doodle_btn_pen_size"
@@ -363,44 +352,6 @@
                         android:textColor="#ffffff"
                         android:textSize="16dp" />
                 </LinearLayout>
-            </LinearLayout>
-
-            <!-- mosaic menu-->
-            <LinearLayout
-                android:id="@+id/mosaic_menu"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:clickable="true"
-                android:orientation="vertical">
-
-                <Button
-                    android:id="@+id/btn_mosaic_level1"
-                    android:layout_width="35dp"
-                    android:layout_height="30dp"
-                    android:layout_marginBottom="3dp"
-                    android:background="@drawable/doodle_btn_effect_rect_line"
-                    android:onClick="onClick"
-                    android:text="x1" />
-
-                <Button
-                    android:id="@+id/btn_mosaic_level2"
-                    android:layout_width="35dp"
-                    android:layout_height="30dp"
-                    android:layout_marginBottom="3dp"
-                    android:background="@drawable/doodle_btn_effect_rect_line"
-                    android:onClick="onClick"
-                    android:text="x2" />
-
-                <Button
-                    android:id="@+id/btn_mosaic_level3"
-                    android:layout_width="35dp"
-                    android:layout_height="30dp"
-                    android:layout_marginBottom="3dp"
-                    android:background="@drawable/doodle_btn_effect_rect_line"
-                    android:onClick="onClick"
-                    android:text="x3" />
-
             </LinearLayout>
 
         </FrameLayout>

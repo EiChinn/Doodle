@@ -51,16 +51,13 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
     private var mColorContainer: View? = null
     private var mShapeContainer: View? = null
     private var mPenContainer: View? = null
-    private var mMosaicMenu: View? = null
     private var mEditBtn: View? = null
     private var mRedoBtn: View? = null
     private var mViewShowAnimation: AlphaAnimation? = null
-    private var mViewHideAnimation // view隐藏和显示时用到的渐变动画
-            : AlphaAnimation? = null
+    private var mViewHideAnimation: AlphaAnimation? = null // view隐藏和显示时用到的渐变动画
     private var mDoodleParams: DoodleParams? = null
     private var mTouchGestureListener: DoodleOnTouchGestureListener? = null
     private val mPenSizeMap: MutableMap<IDoodlePen, Float> = HashMap() //保存每个画笔对应的最新大小
-    private var mMosaicLevel = -1
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putParcelable(KEY_PARAMS, mDoodleParams)
@@ -174,7 +171,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
 
                 // 每个画笔的初始值
                 mPenSizeMap[DoodlePen.BRUSH] = mDoodle!!.size
-                mPenSizeMap[DoodlePen.MOSAIC] = DEFAULT_MOSAIC_SIZE * mDoodle!!.unitSize
                 mPenSizeMap[DoodlePen.COPY] = DEFAULT_COPY_SIZE * mDoodle!!.unitSize
                 mPenSizeMap[DoodlePen.ERASER] = mDoodle!!.size
                 mPenSizeMap[DoodlePen.TEXT] = DEFAULT_TEXT_SIZE * mDoodle!!.unitSize
@@ -320,7 +316,7 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
     }
 
     private fun canChangeColor(pen: IDoodlePen): Boolean {
-        return pen !== DoodlePen.ERASER && pen !== DoodlePen.BITMAP && pen !== DoodlePen.COPY && pen !== DoodlePen.MOSAIC
+        return pen !== DoodlePen.ERASER && pen !== DoodlePen.BITMAP && pen !== DoodlePen.COPY
     }
     private fun refreshLegendIndex() {
         val sortedLegends = mDoodle.allItem
@@ -492,7 +488,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
         mSettingsPanel = findViewById(cn.hzw.doodle.R.id.doodle_panel)
         mShapeContainer = findViewById(cn.hzw.doodle.R.id.shape_container)
         mPenContainer = findViewById(cn.hzw.doodle.R.id.pen_container)
-        mMosaicMenu = findViewById(cn.hzw.doodle.R.id.mosaic_menu)
         mEditBtn = findViewById(cn.hzw.doodle.R.id.doodle_selectable_edit)
         mRedoBtn = findViewById(cn.hzw.doodle.R.id.btn_redo)
         mBtnColor = findViewById(cn.hzw.doodle.R.id.btn_set_color)
@@ -513,8 +508,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
         resetState()
         if (v.id == cn.hzw.doodle.R.id.btn_pen_hand) {
             mDoodle!!.pen = DoodlePen.BRUSH
-        } else if (v.id == cn.hzw.doodle.R.id.btn_pen_mosaic) {
-            mDoodle!!.pen = DoodlePen.MOSAIC
         } else if (v.id == cn.hzw.doodle.R.id.btn_pen_copy) {
             mDoodle!!.pen = DoodlePen.COPY
         } else if (v.id == cn.hzw.doodle.R.id.btn_pen_eraser) {
@@ -563,42 +556,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
             mDoodle!!.shape = DoodleShape.HOLLOW_RECT
         } else if (v.id == cn.hzw.doodle.R.id.btn_fill_rect) {
             mDoodle!!.shape = DoodleShape.PENTAGON
-        } else if (v.id == cn.hzw.doodle.R.id.btn_mosaic_level1) {
-            if (v.isSelected) {
-                return
-            }
-            mMosaicLevel = DoodlePath.MOSAIC_LEVEL_1
-            mDoodle!!.color = DoodlePath.getMosaicColor(mDoodle, mMosaicLevel)
-            v.isSelected = true
-            mMosaicMenu!!.findViewById<View>(cn.hzw.doodle.R.id.btn_mosaic_level2).isSelected = false
-            mMosaicMenu!!.findViewById<View>(cn.hzw.doodle.R.id.btn_mosaic_level3).isSelected = false
-            if (mTouchGestureListener!!.selectedItem != null) {
-                mTouchGestureListener!!.selectedItem.color = mDoodle!!.color.copy()
-            }
-        } else if (v.id == cn.hzw.doodle.R.id.btn_mosaic_level2) {
-            if (v.isSelected) {
-                return
-            }
-            mMosaicLevel = DoodlePath.MOSAIC_LEVEL_2
-            mDoodle!!.color = DoodlePath.getMosaicColor(mDoodle, mMosaicLevel)
-            v.isSelected = true
-            mMosaicMenu!!.findViewById<View>(cn.hzw.doodle.R.id.btn_mosaic_level1).isSelected = false
-            mMosaicMenu!!.findViewById<View>(cn.hzw.doodle.R.id.btn_mosaic_level3).isSelected = false
-            if (mTouchGestureListener!!.selectedItem != null) {
-                mTouchGestureListener!!.selectedItem.color = mDoodle!!.color.copy()
-            }
-        } else if (v.id == cn.hzw.doodle.R.id.btn_mosaic_level3) {
-            if (v.isSelected) {
-                return
-            }
-            mMosaicLevel = DoodlePath.MOSAIC_LEVEL_3
-            mDoodle!!.color = DoodlePath.getMosaicColor(mDoodle, mMosaicLevel)
-            v.isSelected = true
-            mMosaicMenu!!.findViewById<View>(cn.hzw.doodle.R.id.btn_mosaic_level1).isSelected = false
-            mMosaicMenu!!.findViewById<View>(cn.hzw.doodle.R.id.btn_mosaic_level2).isSelected = false
-            if (mTouchGestureListener!!.selectedItem != null) {
-                mTouchGestureListener!!.selectedItem.color = mDoodle!!.color.copy()
-            }
         } else if (v.id == cn.hzw.doodle.R.id.btn_redo) {
             if (!mDoodle!!.redo(1)) {
                 mRedoBtn!!.visibility = View.GONE
@@ -708,7 +665,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
         override fun setPen(pen: IDoodlePen) {
             val oldPen = getPen()
             super.setPen(pen)
-            mMosaicMenu!!.visibility = GONE
             mEditBtn!!.visibility = GONE // edit btn
             if (pen === DoodlePen.BITMAP || pen === DoodlePen.TEXT) {
                 mEditBtn!!.visibility = VISIBLE // edit btn
@@ -718,10 +674,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                 } else {
                     mColorContainer!!.visibility = VISIBLE
                 }
-            } else if (pen === DoodlePen.MOSAIC) {
-                mMosaicMenu!!.visibility = VISIBLE
-                mShapeContainer!!.visibility = VISIBLE
-                mColorContainer!!.visibility = GONE
             } else {
                 mShapeContainer!!.visibility = VISIBLE
                 if (pen === DoodlePen.COPY || pen === DoodlePen.ERASER) {
@@ -740,23 +692,10 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                 if (isEditMode) {
                     mShapeContainer!!.visibility = GONE
                     mColorContainer!!.visibility = GONE
-                    mMosaicMenu!!.visibility = GONE
                 }
             } else {
                 mShapeContainer!!.visibility = GONE
                 return
-            }
-            if (pen === DoodlePen.BRUSH) {
-            } else if (pen === DoodlePen.MOSAIC) {
-                if (mMosaicLevel <= 0) {
-                    mMosaicMenu!!.findViewById<View>(cn.hzw.doodle.R.id.btn_mosaic_level2).performClick()
-                } else {
-                    mDoodle!!.color = DoodlePath.getMosaicColor(mDoodle, mMosaicLevel)
-                }
-            } else if (pen === DoodlePen.COPY) {
-            } else if (pen === DoodlePen.ERASER) {
-            } else if (pen === DoodlePen.TEXT) {
-            } else if (pen === DoodlePen.BITMAP) {
             }
         }
 
@@ -784,13 +723,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                     && canChangeColor(pen)) {
                 if (mTouchGestureListener!!.selectedItem != null) {
                     mTouchGestureListener!!.selectedItem.color = getColor().copy()
-                }
-            }
-            if (doodleColor != null && pen === DoodlePen.MOSAIC && doodleColor.level != mMosaicLevel) {
-                when (doodleColor.level) {
-                    DoodlePath.MOSAIC_LEVEL_1 -> this@DoodleActivity.findViewById<View>(cn.hzw.doodle.R.id.btn_mosaic_level1).performClick()
-                    DoodlePath.MOSAIC_LEVEL_2 -> this@DoodleActivity.findViewById<View>(cn.hzw.doodle.R.id.btn_mosaic_level2).performClick()
-                    DoodlePath.MOSAIC_LEVEL_3 -> this@DoodleActivity.findViewById<View>(cn.hzw.doodle.R.id.btn_mosaic_level3).performClick()
                 }
             }
         }
@@ -845,7 +777,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                 mShapeContainer!!.visibility = GONE
                 mColorContainer!!.visibility = GONE
                 binding.btnUndo.visibility = GONE
-                mMosaicMenu!!.visibility = GONE
             } else {
                 if (mLastIsDrawableOutside != null) { // restore
                     mDoodle!!.setIsDrawableOutside(mLastIsDrawableOutside!!)
@@ -872,7 +803,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
 
         init {
             mBtnPenIds[DoodlePen.BRUSH] = cn.hzw.doodle.R.id.btn_pen_hand
-            mBtnPenIds[DoodlePen.MOSAIC] = cn.hzw.doodle.R.id.btn_pen_mosaic
             mBtnPenIds[DoodlePen.COPY] = cn.hzw.doodle.R.id.btn_pen_copy
             mBtnPenIds[DoodlePen.ERASER] = cn.hzw.doodle.R.id.btn_pen_eraser
             mBtnPenIds[DoodlePen.TEXT] = cn.hzw.doodle.R.id.btn_pen_text
