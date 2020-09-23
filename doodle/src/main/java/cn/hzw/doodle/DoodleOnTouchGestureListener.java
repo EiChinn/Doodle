@@ -189,6 +189,9 @@ public class DoodleOnTouchGestureListener extends TouchGestureDetector.OnTouchGe
                     mDoodle.toX(mTouchX),
                     mDoodle.toY(mTouchY));
             mCurrDoodlePath.updatePath(mCurrPath);
+        } else {
+            // TODO: 2020/9/23 use mCurrPath.reset() or rewind()?
+            mCurrPath = null; // 否则，画完其他图形选择折线的话，会连上上一个图形
         }
 
         if (mCurrDoodlePath != null) {
