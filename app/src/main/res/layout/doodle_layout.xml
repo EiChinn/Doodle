@@ -144,7 +144,7 @@
                             android:src="@drawable/doodle_ic_hollow_circle" />
 
                         <ImageView
-                            android:id="@+id/btn_fill_circle"
+                            android:id="@+id/btn_oval"
                             android:layout_width="@dimen/doodle_btn_shape_size"
                             android:layout_height="@dimen/doodle_btn_shape_size"
                             android:layout_marginRight="5dp"
@@ -164,14 +164,23 @@
                             android:src="@drawable/doodle_ic_hollow_rect" />
 
                         <ImageView
-                            android:id="@+id/btn_fill_rect"
+                            android:id="@+id/btn_polyline"
                             android:layout_width="@dimen/doodle_btn_shape_size"
                             android:layout_height="@dimen/doodle_btn_shape_size"
                             android:layout_marginRight="5dp"
                             android:background="@drawable/doodle_btn_effect_rect_line"
                             android:onClick="onClick"
                             android:scaleType="centerInside"
-                            android:src="@drawable/doodle_ic_fill_rect" />
+                            android:src="@drawable/ic_polyline_24" />
+                        <ImageView
+                            android:id="@+id/btn_polygon"
+                            android:layout_width="@dimen/doodle_btn_shape_size"
+                            android:layout_height="@dimen/doodle_btn_shape_size"
+                            android:layout_marginRight="5dp"
+                            android:background="@drawable/doodle_btn_effect_rect_line"
+                            android:onClick="onClick"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/ic_polygon_24" />
                     </LinearLayout>
 
                 </LinearLayout>

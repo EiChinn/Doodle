@@ -160,7 +160,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                 mDoodle!!.size = size
                 // 选择画笔
                 setPen(DoodlePen.BRUSH)
-                mDoodle!!.shape = DoodleShape.HAND_WRITE
                 mDoodle!!.color = DoodleColor(mDoodleParams!!.mPaintColor)
                 mDoodle!!.zoomerScale = mDoodleParams!!.mZoomerScale
                 mTouchGestureListener!!.isSupportScaleItem = mDoodleParams!!.mSupportScaleItem
@@ -510,22 +509,23 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
             if (needRefreshLegendIndex) {
                 refreshLegendIndex()
             }
-        } else if (v.id == cn.hzw.doodle.R.id.btn_hand_write) {
-            mDoodle!!.shape = DoodleShape.HAND_WRITE
-        } else if (v.id == cn.hzw.doodle.R.id.btn_arrow) {
-            mDoodle!!.shape = DoodleShape.ARROW
-        } else if (v.id == cn.hzw.doodle.R.id.btn_line) {
-            mDoodle!!.shape = DoodleShape.POLYLINE
-            binding.polylineGroup.visibility = View.VISIBLE
-        } else if (v.id == cn.hzw.doodle.R.id.btn_holl_circle) {
-            mDoodle!!.shape = DoodleShape.HOLLOW_CIRCLE
-        } else if (v.id == cn.hzw.doodle.R.id.btn_fill_circle) {
-            mDoodle!!.shape = DoodleShape.OVAL
-        } else if (v.id == cn.hzw.doodle.R.id.btn_holl_rect) {
-            mDoodle!!.shape = DoodleShape.HOLLOW_RECT
-        } else if (v.id == cn.hzw.doodle.R.id.btn_fill_rect) {
-            mDoodle!!.shape = DoodleShape.PENTAGON
-        } else if (v.id == cn.hzw.doodle.R.id.btn_redo) {
+        } else if (v.id == R.id.btn_hand_write) {
+            setShape(DoodleShape.HAND_WRITE)
+        } else if (v.id == R.id.btn_arrow) {
+            setShape(DoodleShape.ARROW)
+        } else if (v.id == R.id.btn_line) {
+            setShape(DoodleShape.LINE)
+        } else if (v.id == R.id.btn_holl_circle) {
+            setShape(DoodleShape.HOLLOW_CIRCLE)
+        } else if (v.id == R.id.btn_oval) {
+            setShape(DoodleShape.OVAL)
+        } else if (v.id == R.id.btn_holl_rect) {
+            setShape(DoodleShape.HOLLOW_RECT)
+        } else if (v.id == R.id.btn_polyline) {
+            setShape(DoodleShape.POLYLINE)
+        } else if (v.id == R.id.btn_polygon) {
+            setShape(DoodleShape.TRIANGLE)
+        }else if (v.id == cn.hzw.doodle.R.id.btn_redo) {
             if (!mDoodle!!.redo(1)) {
                 mRedoBtn!!.visibility = View.GONE
             }
@@ -625,6 +625,7 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
     }
 
     private fun setPen(pen: DoodlePen) {
+        mDoodle.pen = pen
         resetPen()
         when (pen) {
             DoodlePen.BRUSH -> setPenBrush()
@@ -644,21 +645,74 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
 
     private fun setPenBrush() {
         binding.btnPenHand.isSelected = true
-        mDoodle.pen = DoodlePen.BRUSH
         binding.shapeContainer.visibility = View.VISIBLE
+        setShape(DoodleShape.HAND_WRITE)
     }
     private fun setPenEraser() {
         binding.btnPenEraser.isSelected = true
-        mDoodle.pen = DoodlePen.ERASER
-        // TODO: 2020/9/23 紧接着 setShape 为手绘
+        setShape(DoodleShape.HAND_WRITE)
     }
     private fun setPenText() {
         binding.btnPenText.isSelected = true
-        mDoodle.pen = DoodlePen.TEXT
     }
     private fun setPenBitmap() {
         binding.btnPenBitmap.isSelected = true
-        mDoodle.pen = DoodlePen.BITMAP
+    }
+
+    private fun setShape(shape: DoodleShape) {
+        check(mDoodle.pen == DoodlePen.BRUSH || mDoodle.pen == DoodlePen.ERASER) {
+            "only DoodlePen.BRUSH or DoodlePen.ERASER can set shape"
+        }
+        resetShape()
+        when (shape) {
+            DoodleShape.HAND_WRITE -> setShapeHandWrite()
+            DoodleShape.ARROW -> setShapeArrow()
+            DoodleShape.LINE -> setShapeLine()
+            DoodleShape.POLYLINE -> setShapePolyLine()
+            DoodleShape.HOLLOW_CIRCLE -> setShapeCircle()
+            DoodleShape.OVAL -> setShapeOval()
+            DoodleShape.HOLLOW_RECT -> setShapeRectangle()
+            DoodleShape.TRIANGLE -> setShapePolygon()
+        }
+        mDoodle.shape = shape
+    }
+
+    private fun resetShape() {
+        binding.btnHandWrite.isSelected = false
+        binding.btnArrow.isSelected = false
+        binding.btnLine.isSelected = false
+        binding.btnPolyline.isSelected = false
+        binding.btnHollCircle.isSelected = false
+        binding.btnOval.isSelected = false
+        binding.btnHollRect.isSelected = false
+        binding.btnPolygon.isSelected = false
+        binding.polylineGroup.visibility = View.GONE
+
+    }
+    private fun setShapeHandWrite() {
+        binding.btnHandWrite.isSelected = true
+    }
+    private fun setShapeArrow() {
+        binding.btnArrow.isSelected = true
+    }
+    private fun setShapeLine() {
+        binding.btnLine.isSelected = true
+    }
+    private fun setShapePolyLine() {
+        binding.btnPolyline.isSelected = true
+        binding.polylineGroup.visibility = View.VISIBLE
+    }
+    private fun setShapeCircle() {
+        binding.btnHollCircle.isSelected = true
+    }
+    private fun setShapeOval() {
+        binding.btnOval.isSelected = true
+    }
+    private fun setShapeRectangle() {
+        binding.btnHollRect.isSelected = true
+    }
+    private fun setShapePolygon() {
+        binding.btnPolygon.isSelected = true
     }
 
     /**
@@ -667,12 +721,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
     private inner class DoodleViewWrapper(context: Context?, bitmap: Bitmap?,
                                           optimizeDrawing: Boolean, listener: IDoodleListener?
     ) : DoodleView(context, bitmap, optimizeDrawing, listener) {
-
-        private val mBtnShapeIds: MutableMap<IDoodleShape, Int> = HashMap()
-        override fun setShape(shape: IDoodleShape) {
-            super.setShape(shape)
-            setSingleSelected(mBtnShapeIds.values, mBtnShapeIds[shape]!!)
-        }
 
         override fun setSize(paintSize: Float) {
             super.setSize(paintSize)
@@ -750,22 +798,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                 mPenContainer!!.visibility = VISIBLE
                 binding.btnUndo.visibility = VISIBLE
             }
-        }
-
-        private fun setSingleSelected(ids: Collection<Int>, selectedId: Int) {
-            for (id in ids) {
-                this@DoodleActivity.findViewById<View>(id).isSelected = id == selectedId
-            }
-        }
-
-        init {
-            mBtnShapeIds[DoodleShape.HAND_WRITE] = cn.hzw.doodle.R.id.btn_hand_write
-            mBtnShapeIds[DoodleShape.ARROW] = cn.hzw.doodle.R.id.btn_arrow
-            mBtnShapeIds[DoodleShape.POLYLINE] = cn.hzw.doodle.R.id.btn_line
-            mBtnShapeIds[DoodleShape.HOLLOW_CIRCLE] = cn.hzw.doodle.R.id.btn_holl_circle
-            mBtnShapeIds[DoodleShape.OVAL] = cn.hzw.doodle.R.id.btn_fill_circle
-            mBtnShapeIds[DoodleShape.HOLLOW_RECT] = cn.hzw.doodle.R.id.btn_holl_rect
-            mBtnShapeIds[DoodleShape.PENTAGON] = cn.hzw.doodle.R.id.btn_fill_rect
         }
     }
 
