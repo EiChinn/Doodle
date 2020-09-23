@@ -38,6 +38,7 @@
                 android:padding="@dimen/doodle_margin">
 
                 <LinearLayout
+                    android:id="@+id/ll_pen_shape"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">

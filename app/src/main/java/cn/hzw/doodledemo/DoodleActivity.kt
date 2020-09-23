@@ -47,9 +47,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
     private var isLegend = false
     private var mSettingsPanel: View? = null
     private var mBtnColor: View? = null
-    private var mColorContainer: View? = null
-    private var mShapeContainer: View? = null
-    private var mPenContainer: View? = null
     private var mRedoBtn: View? = null
     private var mViewShowAnimation: AlphaAnimation? = null
     private var mViewHideAnimation: AlphaAnimation? = null // view隐藏和显示时用到的渐变动画
@@ -462,11 +459,8 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
     private fun initView() {
         binding.doodleSelectableEditContainer.visibility = View.GONE
         mSettingsPanel = findViewById(cn.hzw.doodle.R.id.doodle_panel)
-        mShapeContainer = findViewById(cn.hzw.doodle.R.id.shape_container)
-        mPenContainer = findViewById(cn.hzw.doodle.R.id.pen_container)
         mRedoBtn = findViewById(cn.hzw.doodle.R.id.btn_redo)
         mBtnColor = findViewById(cn.hzw.doodle.R.id.btn_set_color)
-        mColorContainer = findViewById(cn.hzw.doodle.R.id.btn_set_color_container)
         mViewShowAnimation = AlphaAnimation(0.0f, 1.0f)
         mViewShowAnimation!!.duration = 150
         mViewHideAnimation = AlphaAnimation(1.0f, 0.0f)
@@ -548,13 +542,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
         }
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-
-        }
-        return super.onKeyDown(keyCode, event)
-    }
-
     override fun onBackPressed() { // 返回键监听
         if (mDoodleView.isEditMode) {
             setEditMode(false)
@@ -601,6 +588,7 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
         val paintSizeText = contentView.findViewById<TextView>(R.id.paint_size_text)
         // seekbar初始化
         val mSeekBar = contentView.findViewById<SeekBar>(R.id.stroke_seekbar)
+        mSeekBar.max = 20
         mSeekBar.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
             override fun onStopTrackingTouch(seekBar: SeekBar) {}
             override fun onStartTrackingTouch(seekBar: SeekBar) {}
@@ -740,13 +728,12 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
         mDoodleView.isEditMode = editMode
         binding.doodleBtnBrushEdit.isSelected = editMode
         if (editMode) {
-            Toast.makeText(this@DoodleActivity, cn.hzw.doodle.R.string.doodle_edit_mode, Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@DoodleActivity, R.string.doodle_edit_mode, Toast.LENGTH_SHORT).show()
             mLastIsDrawableOutside = mDoodle.isDrawableOutside // save
             mDoodle.setIsDrawableOutside(true)
-            mPenContainer!!.visibility = DoodleView.GONE
-            mShapeContainer!!.visibility = DoodleView.GONE
-            mColorContainer!!.visibility = DoodleView.GONE
-            binding.btnUndo.visibility = DoodleView.GONE
+            binding.llPenShape.visibility = View.GONE
+            binding.btnSetColorContainer.visibility = View.GONE
+            binding.btnUndo.visibility = View.GONE
         } else {
             if (mLastIsDrawableOutside != null) { // restore
                 mDoodle.setIsDrawableOutside(mLastIsDrawableOutside!!)
@@ -756,8 +743,9 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                 pen = pen
             }*/
             mTouchGestureListener!!.selectedItem = null
-            mPenContainer!!.visibility = DoodleView.VISIBLE
+            binding.llPenShape.visibility = View.VISIBLE
             binding.btnUndo.visibility = DoodleView.VISIBLE
+            binding.btnSetColorContainer.visibility = View.VISIBLE
         }
     }
 
