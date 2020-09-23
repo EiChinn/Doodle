@@ -51,7 +51,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
     private var mColorContainer: View? = null
     private var mShapeContainer: View? = null
     private var mPenContainer: View? = null
-    private var mEditBtn: View? = null
     private var mRedoBtn: View? = null
     private var mViewShowAnimation: AlphaAnimation? = null
     private var mViewHideAnimation: AlphaAnimation? = null // view隐藏和显示时用到的渐变动画
@@ -467,7 +466,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
         mSettingsPanel = findViewById(cn.hzw.doodle.R.id.doodle_panel)
         mShapeContainer = findViewById(cn.hzw.doodle.R.id.shape_container)
         mPenContainer = findViewById(cn.hzw.doodle.R.id.pen_container)
-        mEditBtn = findViewById(cn.hzw.doodle.R.id.doodle_selectable_edit)
         mRedoBtn = findViewById(cn.hzw.doodle.R.id.btn_redo)
         mBtnColor = findViewById(cn.hzw.doodle.R.id.btn_set_color)
         mColorContainer = findViewById(cn.hzw.doodle.R.id.btn_set_color_container)
@@ -502,8 +500,8 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
         } else if (v.id == cn.hzw.doodle.R.id.doodle_selectable_edit) {
             if (mTouchGestureListener!!.selectedItem is DoodleText) {
                 createDoodleText(mTouchGestureListener!!.selectedItem as DoodleText, -1f, -1f)
-            } else if (mTouchGestureListener!!.selectedItem is DoodleBitmap) {
-                createDoodleBitmap(mTouchGestureListener!!.selectedItem as DoodleBitmap, -1f, -1f)
+            } else {
+                Toast.makeText(this, "当前图形不支持编辑内容", Toast.LENGTH_SHORT).show()
             }
         } else if (v.id == cn.hzw.doodle.R.id.doodle_selectable_remove) {
             val needRefreshLegendIndex = mTouchGestureListener!!.selectedItem is DoodleLegendSymbolText
@@ -636,9 +634,7 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
         override fun setPen(pen: IDoodlePen) {
             val oldPen = getPen()
             super.setPen(pen)
-            mEditBtn!!.visibility = GONE // edit btn
             if (pen === DoodlePen.BITMAP || pen === DoodlePen.TEXT) {
-                mEditBtn!!.visibility = VISIBLE // edit btn
                 mShapeContainer!!.visibility = GONE
                 if (pen === DoodlePen.BITMAP) {
                     mColorContainer!!.visibility = GONE
