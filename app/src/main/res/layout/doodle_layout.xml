@@ -200,6 +200,18 @@
                         android:orientation="horizontal">
 
                         <ImageView
+                            android:id="@+id/btn_clean"
+                            android:layout_width="@dimen/doodle_btn_pen_size"
+                            android:layout_height="@dimen/doodle_btn_pen_size"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginBottom="@dimen/doodle_margin"
+                            android:background="@drawable/doodle_btn_effect_round"
+                            android:onClick="onClick"
+                            android:padding="5dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/ic_baseline_clear_all_24"
+                            android:visibility="gone" />
+                        <ImageView
                             android:id="@+id/doodle_btn_brush_edit"
                             android:layout_width="@dimen/doodle_btn_pen_size"
                             android:layout_height="@dimen/doodle_btn_pen_size"

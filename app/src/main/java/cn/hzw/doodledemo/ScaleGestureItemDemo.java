@@ -52,6 +52,11 @@ public class ScaleGestureItemDemo extends Activity {
                 touchGestureListener.setSelectedItem(item);
                 doodle.addItem(item);
             }
+
+            @Override
+            public void onAddItem() {
+
+            }
         });
 
         // step 2

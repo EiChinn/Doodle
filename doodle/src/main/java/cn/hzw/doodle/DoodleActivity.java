@@ -268,6 +268,11 @@ public class DoodleActivity extends Activity {
                 mPenSizeMap.put(DoodlePen.TEXT, DEFAULT_TEXT_SIZE * mDoodle.getUnitSize());
                 mPenSizeMap.put(DoodlePen.BITMAP, DEFAULT_BITMAP_SIZE * mDoodle.getUnitSize());
             }
+
+            @Override
+            public void onAddItem() {
+
+            }
         });
 
         mTouchGestureListener = new DoodleOnTouchGestureListener(mDoodleView, new DoodleOnTouchGestureListener.ISelectionListener() {
@@ -399,7 +404,7 @@ public class DoodleActivity extends Activity {
 
     // 添加贴图
     private void createDoodleBitmap(final DoodleBitmap doodleBitmap, final float x, final float y) {
-        DialogController.showSelectImageDialog(this, new ImageSelectorView.ImageSelectorListener() {
+        DialogController.showSelectImageDialog(this, null, new ImageSelectorView.ImageSelectorListener() {
             @Override
             public void onCancel() {
             }

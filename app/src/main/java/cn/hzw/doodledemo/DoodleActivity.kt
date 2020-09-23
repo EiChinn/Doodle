@@ -2,7 +2,6 @@ package cn.hzw.doodledemo
 
 import android.animation.ValueAnimator
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
@@ -12,10 +11,10 @@ import android.os.PersistableBundle
 import android.text.TextUtils
 import android.util.DisplayMetrics
 import android.view.*
-import android.view.View.OnLongClickListener
 import android.view.animation.AlphaAnimation
 import android.widget.*
 import android.widget.SeekBar.OnSeekBarChangeListener
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import cn.forward.androids.utils.ImageUtils
 import cn.forward.androids.utils.LogUtil
@@ -106,7 +105,8 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
         Note: When item is selected for editing after opening, it will be drawn at the top level, and not at the corresponding level until editing is completed.
         是否优化绘制，建议开启，可优化绘制速度和性能.
         注意：开启后item被选中编辑时时会绘制在最上面一层，直到结束编辑后才绘制在相应层级
-         */mDoodleView = DoodleViewWrapper(this, bitmap, mDoodleParams!!.mOptimizeDrawing, object : IDoodleListener {
+         */
+        mDoodleView = DoodleView(this, bitmap, mDoodleParams!!.mOptimizeDrawing, object : IDoodleListener {
             override fun onSaved(doodle: IDoodle, bitmap: Bitmap, callback: Runnable) { // 保存图片为jpg格式
                 var doodleFile: File? = null
                 var file: File? = null
@@ -170,6 +170,15 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                 mPenSizeMap[DoodlePen.TEXT] = DEFAULT_TEXT_SIZE * mDoodle!!.unitSize
                 mPenSizeMap[DoodlePen.BITMAP] = DEFAULT_BITMAP_SIZE * mDoodle!!.unitSize
             }
+
+            override fun onAddItem() {
+                if (mDoodleView.redoItemCount > 0) {
+                    mRedoBtn!!.visibility = DoodleView.VISIBLE
+                } else {
+                    mRedoBtn!!.visibility = DoodleView.GONE
+                }
+
+            }
         })
         mDoodle = mDoodleView
         mTouchGestureListener = DoodleOnTouchGestureListener(mDoodleView, object : DoodleOnTouchGestureListener.ISelectionListener {
@@ -189,7 +198,7 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                     if (mSize == null) {
                         mSize = mDoodle!!.size
                     }
-                    mDoodleView!!.isEditMode = true
+                    setEditMode(true)
                     /*mDoodle!!.pen = selectableItem.pen
                     mDoodle!!.color = selectableItem.color ?: DoodleColor(mDoodleParams!!.mPaintColor)
                     mDoodle!!.size = selectableItem.size*/
@@ -451,16 +460,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
     //++++++++++++++++++以下为一些初始化操作和点击监听+++++++++++++++++++++++++++++++++++++++++
     //
     private fun initView() {
-        binding.btnUndo.setOnLongClickListener(OnLongClickListener {
-            if (!(DoodleParams.getDialogInterceptor() != null
-                            && DoodleParams.getDialogInterceptor().onShow(this@DoodleActivity, mDoodle, DoodleParams.DialogType.CLEAR_ALL))) {
-                DialogController.showEnterCancelDialog(this@DoodleActivity,
-                        getString(cn.hzw.doodle.R.string.doodle_clear_screen), getString(cn.hzw.doodle.R.string.doodle_cant_undo_after_clearing),
-                        { mDoodle!!.clear() }, null
-                )
-            }
-            true
-        })
         binding.doodleSelectableEditContainer.visibility = View.GONE
         mSettingsPanel = findViewById(cn.hzw.doodle.R.id.doodle_panel)
         mShapeContainer = findViewById(cn.hzw.doodle.R.id.shape_container)
@@ -491,9 +490,15 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
         } else if (v.id == cn.hzw.doodle.R.id.btn_pen_bitmap) {
             setPen(DoodlePen.BITMAP)
         } else if (v.id == cn.hzw.doodle.R.id.doodle_btn_brush_edit) {
-            mDoodleView!!.isEditMode = !mDoodleView!!.isEditMode
+            setEditMode(!mDoodleView.isEditMode)
         } else if (v.id == cn.hzw.doodle.R.id.btn_undo) {
-            mDoodle!!.undo()
+            mTouchGestureListener!!.selectedItem = null
+            mDoodle.undo()
+            if (mDoodle.redoItemCount > 0) {
+                mRedoBtn!!.visibility = DoodleView.VISIBLE
+            } else {
+                mRedoBtn!!.visibility = DoodleView.GONE
+            }
         } else if (v.id == cn.hzw.doodle.R.id.btn_set_color_container) {
             showPopup(mBtnColor)
         } else if (v.id == cn.hzw.doodle.R.id.doodle_selectable_edit) {
@@ -525,25 +530,37 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
             setShape(DoodleShape.POLYLINE)
         } else if (v.id == R.id.btn_polygon) {
             setShape(DoodleShape.TRIANGLE)
-        }else if (v.id == cn.hzw.doodle.R.id.btn_redo) {
+        } else if (v.id == cn.hzw.doodle.R.id.btn_redo) {
             if (!mDoodle!!.redo(1)) {
                 mRedoBtn!!.visibility = View.GONE
             }
+        } else if (v.id == R.id.btn_clean) {
+            AlertDialog.Builder(this)
+                    .setTitle(getString(R.string.doodle_clear_screen))
+                    .setMessage(getString(R.string.doodle_cant_undo_after_clearing))
+                    .setNegativeButton("取消", null)
+                    .setPositiveButton("确定") { _, _ ->
+                        mDoodle.clear()
+                        mTouchGestureListener!!.selectedItem = null
+                        mRedoBtn!!.visibility = DoodleView.GONE
+                    }
+                    .create().show()
         }
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (mDoodleView!!.isEditMode) {
-                mDoodleView!!.isEditMode = false
-                return true
-            }
+
         }
         return super.onKeyDown(keyCode, event)
     }
 
     override fun onBackPressed() { // 返回键监听
-        if (mDoodle!!.allItem == null || mDoodle!!.itemCount == 0) {
+        if (mDoodleView.isEditMode) {
+            setEditMode(false)
+            return
+        }
+        if (mDoodle.allItem == null || mDoodle.itemCount == 0) {
             finish()
             return
         }
@@ -715,74 +732,32 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
         binding.btnPolygon.isSelected = true
     }
 
-    /**
-     * 包裹DoodleView，监听相应的设置接口，以改变UI状态
-     */
-    private inner class DoodleViewWrapper(context: Context?, bitmap: Bitmap?,
-                                          optimizeDrawing: Boolean, listener: IDoodleListener?
-    ) : DoodleView(context, bitmap, optimizeDrawing, listener) {
-
-        override fun setSize(paintSize: Float) {
-            super.setSize(paintSize)
-            if (mTouchGestureListener!!.selectedItem != null) {
-                mTouchGestureListener!!.selectedItem.size = size
-            }
+    private var mLastIsDrawableOutside: Boolean? = null
+    private fun setEditMode(editMode: Boolean) {
+        if (editMode == mDoodleView.isEditMode) {
+            return
         }
-
-        override fun undo(): Boolean {
+        mDoodleView.isEditMode = editMode
+        binding.doodleBtnBrushEdit.isSelected = editMode
+        if (editMode) {
+            Toast.makeText(this@DoodleActivity, cn.hzw.doodle.R.string.doodle_edit_mode, Toast.LENGTH_SHORT).show()
+            mLastIsDrawableOutside = mDoodle.isDrawableOutside // save
+            mDoodle.setIsDrawableOutside(true)
+            mPenContainer!!.visibility = DoodleView.GONE
+            mShapeContainer!!.visibility = DoodleView.GONE
+            mColorContainer!!.visibility = DoodleView.GONE
+            binding.btnUndo.visibility = DoodleView.GONE
+        } else {
+            if (mLastIsDrawableOutside != null) { // restore
+                mDoodle.setIsDrawableOutside(mLastIsDrawableOutside!!)
+            }
+            mTouchGestureListener!!.center() // center picture
+            /*if (mTouchGestureListener!!.selectedItem == null) { // restore
+                pen = pen
+            }*/
             mTouchGestureListener!!.selectedItem = null
-            val res = super.undo()
-            if (redoItemCount > 0) {
-                mRedoBtn!!.visibility = VISIBLE
-            } else {
-                mRedoBtn!!.visibility = GONE
-            }
-            return res
-        }
-
-        override fun clear() {
-            super.clear()
-            mTouchGestureListener!!.selectedItem = null
-            mRedoBtn!!.visibility = GONE
-        }
-
-        override fun addItem(item: IDoodleItem) {
-            super.addItem(item)
-            if (redoItemCount > 0) {
-                mRedoBtn!!.visibility = VISIBLE
-            } else {
-                mRedoBtn!!.visibility = GONE
-            }
-        }
-
-        var mBtnEditMode = this@DoodleActivity.findViewById<View>(cn.hzw.doodle.R.id.doodle_btn_brush_edit)
-        var mLastIsDrawableOutside: Boolean? = null
-        override fun setEditMode(editMode: Boolean) {
-            if (editMode == isEditMode) {
-                return
-            }
-            super.setEditMode(editMode)
-            mBtnEditMode.isSelected = editMode
-            if (editMode) {
-                Toast.makeText(this@DoodleActivity, cn.hzw.doodle.R.string.doodle_edit_mode, Toast.LENGTH_SHORT).show()
-                mLastIsDrawableOutside = mDoodle!!.isDrawableOutside // save
-                mDoodle!!.setIsDrawableOutside(true)
-                mPenContainer!!.visibility = GONE
-                mShapeContainer!!.visibility = GONE
-                mColorContainer!!.visibility = GONE
-                binding.btnUndo.visibility = GONE
-            } else {
-                if (mLastIsDrawableOutside != null) { // restore
-                    mDoodle!!.setIsDrawableOutside(mLastIsDrawableOutside!!)
-                }
-                mTouchGestureListener!!.center() // center picture
-                /*if (mTouchGestureListener!!.selectedItem == null) { // restore
-                    pen = pen
-                }*/
-                mTouchGestureListener!!.selectedItem = null
-                mPenContainer!!.visibility = VISIBLE
-                binding.btnUndo.visibility = VISIBLE
-            }
+            mPenContainer!!.visibility = DoodleView.VISIBLE
+            binding.btnUndo.visibility = DoodleView.VISIBLE
         }
     }
 

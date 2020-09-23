@@ -27,4 +27,9 @@ public interface IDoodleListener {
      */
     void onReady(IDoodle doodle);
 
+    /**
+     * add item notification, use to set redo btn enable
+     */
+    void onAddItem();
+
 }

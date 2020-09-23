@@ -1164,6 +1164,9 @@ public class DoodleView extends FrameLayout implements IDoodle {
     public void addItem(IDoodleItem item) {
         addItemInner(item);
         mRedoItemStack.clear();
+        if (mDoodleListener != null) {
+            mDoodleListener.onAddItem();
+        }
     }
 
     private void addItemInner(IDoodleItem item) {
