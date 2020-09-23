@@ -729,21 +729,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
             }
         }
 
-        override fun setColor(color: IDoodleColor) {
-            val pen = pen
-            super.setColor(color)
-            var doodleColor: DoodleColor? = null
-            if (color is DoodleColor) {
-                doodleColor = color
-            }
-            if (doodleColor != null
-                    && canChangeColor(pen)) {
-                if (mTouchGestureListener!!.selectedItem != null) {
-                    mTouchGestureListener!!.selectedItem.color = getColor().copy()
-                }
-            }
-        }
-
         override fun undo(): Boolean {
             mTouchGestureListener!!.selectedItem = null
             val res = super.undo()
