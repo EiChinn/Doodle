@@ -552,7 +552,7 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
         } else if (v.id == cn.hzw.doodle.R.id.btn_holl_circle) {
             mDoodle!!.shape = DoodleShape.HOLLOW_CIRCLE
         } else if (v.id == cn.hzw.doodle.R.id.btn_fill_circle) {
-            mDoodle!!.shape = DoodleShape.TRIANGLE
+            mDoodle!!.shape = DoodleShape.OVAL
         } else if (v.id == cn.hzw.doodle.R.id.btn_holl_rect) {
             mDoodle!!.shape = DoodleShape.HOLLOW_RECT
         } else if (v.id == cn.hzw.doodle.R.id.btn_fill_rect) {
@@ -816,7 +816,7 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
             mBtnShapeIds[DoodleShape.ARROW] = cn.hzw.doodle.R.id.btn_arrow
             mBtnShapeIds[DoodleShape.POLYLINE] = cn.hzw.doodle.R.id.btn_line
             mBtnShapeIds[DoodleShape.HOLLOW_CIRCLE] = cn.hzw.doodle.R.id.btn_holl_circle
-            mBtnShapeIds[DoodleShape.TRIANGLE] = cn.hzw.doodle.R.id.btn_fill_circle
+            mBtnShapeIds[DoodleShape.OVAL] = cn.hzw.doodle.R.id.btn_fill_circle
             mBtnShapeIds[DoodleShape.HOLLOW_RECT] = cn.hzw.doodle.R.id.btn_holl_rect
             mBtnShapeIds[DoodleShape.PENTAGON] = cn.hzw.doodle.R.id.btn_fill_rect
         }

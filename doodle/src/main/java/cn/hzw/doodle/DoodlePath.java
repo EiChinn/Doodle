@@ -61,6 +61,8 @@ public class DoodlePath extends DoodleRotatableItemBase {
             updateLinePath(mOriginPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
         } else if (DoodleShape.FILL_CIRCLE.equals(getShape()) || DoodleShape.HOLLOW_CIRCLE.equals(getShape())) {
             updateCirclePath(mOriginPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
+        } else if (DoodleShape.OVAL.equals(getShape())) {
+            updateOvalPath(mOriginPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
         } else if (DoodleShape.FILL_RECT.equals(getShape()) || DoodleShape.HOLLOW_RECT.equals(getShape())) {
             updateRectPath(mOriginPath, mSxy.x, mSxy.y, mDxy.x, mDxy.y, getSize());
         } else if (DoodleShape.TRIANGLE.equals(getShape())) {
@@ -222,7 +224,9 @@ public class DoodlePath extends DoodleRotatableItemBase {
     private void updateCirclePath(Path path, float sx, float sy, float dx, float dy, float size) {
         float radius = (float) Math.sqrt((sx - dx) * (sx - dx) + (sy - dy) * (sy - dy));
         path.addCircle(sx, sy, radius, Path.Direction.CCW);
-
+    }
+    private void updateOvalPath(Path path, float sx, float sy, float dx, float dy, float size) {
+        path.addOval(sx, sy, dx, dy, Path.Direction.CCW);
     }
 
     private PointF nextPoint;

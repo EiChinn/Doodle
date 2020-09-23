@@ -17,6 +17,7 @@ public enum DoodleShape implements IDoodleShape {
     LINE, // 直线
     HOLLOW_RECT, // 空心矩形
     HOLLOW_CIRCLE, // 空心圆
+    OVAL, // 椭圆
     // POLYGON
     TRIANGLE,
     PENTAGON,
