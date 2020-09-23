@@ -159,7 +159,7 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                 // 设置初始值
                 mDoodle!!.size = size
                 // 选择画笔
-                mDoodle!!.pen = DoodlePen.BRUSH
+                setPen(DoodlePen.BRUSH)
                 mDoodle!!.shape = DoodleShape.HAND_WRITE
                 mDoodle!!.color = DoodleColor(mDoodleParams!!.mPaintColor)
                 mDoodle!!.zoomerScale = mDoodleParams!!.mZoomerScale
@@ -191,13 +191,13 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                         mSize = mDoodle!!.size
                     }
                     mDoodleView!!.isEditMode = true
-                    mDoodle!!.pen = selectableItem.pen
+                    /*mDoodle!!.pen = selectableItem.pen
                     mDoodle!!.color = selectableItem.color ?: DoodleColor(mDoodleParams!!.mPaintColor)
-                    mDoodle!!.size = selectableItem.size
+                    mDoodle!!.size = selectableItem.size*/
                     binding.doodleSelectableEditContainer.visibility = View.VISIBLE
                 } else {
-                    if (mTouchGestureListener!!.selectedItem == null) { // nothing is selected. 当前没有选中任何一个item
-                        if (mLastPen != null) {
+                    if (mTouchGestureListener!!.selectedItem == null) { // nothing is selected. 当前没有选中任何一个item。 点击空白处或者删除了所有图形
+                        /*if (mLastPen != null) {
                             mDoodle!!.pen = mLastPen
                             mLastPen = null
                         }
@@ -208,7 +208,7 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                         if (mSize != null) {
                             mDoodle!!.size = mSize!!
                             mSize = null
-                        }
+                        }*/
                         binding.doodleSelectableEditContainer.visibility = View.GONE
                     }
                 }
@@ -484,13 +484,13 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
     fun onClick(v: View) {
         resetState()
         if (v.id == cn.hzw.doodle.R.id.btn_pen_hand) {
-            mDoodle!!.pen = DoodlePen.BRUSH
+            setPen(DoodlePen.BRUSH)
         } else if (v.id == cn.hzw.doodle.R.id.btn_pen_eraser) {
-            mDoodle!!.pen = DoodlePen.ERASER
+            setPen(DoodlePen.ERASER)
         } else if (v.id == cn.hzw.doodle.R.id.btn_pen_text) {
-            mDoodle!!.pen = DoodlePen.TEXT
+            setPen(DoodlePen.TEXT)
         } else if (v.id == cn.hzw.doodle.R.id.btn_pen_bitmap) {
-            mDoodle!!.pen = DoodlePen.BITMAP
+            setPen(DoodlePen.BITMAP)
         } else if (v.id == cn.hzw.doodle.R.id.doodle_btn_brush_edit) {
             mDoodleView!!.isEditMode = !mDoodleView!!.isEditMode
         } else if (v.id == cn.hzw.doodle.R.id.btn_undo) {
@@ -624,61 +624,49 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
         popup.showAsDropDown(anchor)
     }
 
+    private fun setPen(pen: DoodlePen) {
+        resetPen()
+        when (pen) {
+            DoodlePen.BRUSH -> setPenBrush()
+            DoodlePen.ERASER -> setPenEraser()
+            DoodlePen.TEXT -> setPenText()
+            DoodlePen.BITMAP -> setPenBitmap()
+        }
+    }
+
+    private fun resetPen() {
+        binding.btnPenHand.isSelected = false
+        binding.btnPenEraser.isSelected = false
+        binding.btnPenText.isSelected = false
+        binding.btnPenBitmap.isSelected = false
+        binding.shapeContainer.visibility = View.GONE
+    }
+
+    private fun setPenBrush() {
+        binding.btnPenHand.isSelected = true
+        mDoodle.pen = DoodlePen.BRUSH
+        binding.shapeContainer.visibility = View.VISIBLE
+    }
+    private fun setPenEraser() {
+        binding.btnPenEraser.isSelected = true
+        mDoodle.pen = DoodlePen.ERASER
+        // TODO: 2020/9/23 紧接着 setShape 为手绘
+    }
+    private fun setPenText() {
+        binding.btnPenText.isSelected = true
+        mDoodle.pen = DoodlePen.TEXT
+    }
+    private fun setPenBitmap() {
+        binding.btnPenBitmap.isSelected = true
+        mDoodle.pen = DoodlePen.BITMAP
+    }
+
     /**
      * 包裹DoodleView，监听相应的设置接口，以改变UI状态
      */
     private inner class DoodleViewWrapper(context: Context?, bitmap: Bitmap?,
                                           optimizeDrawing: Boolean, listener: IDoodleListener?
     ) : DoodleView(context, bitmap, optimizeDrawing, listener) {
-        private val mBtnPenIds: MutableMap<IDoodlePen, Int> = HashMap()
-        override fun setPen(pen: IDoodlePen) {
-            val oldPen = getPen()
-            super.setPen(pen)
-            if (pen === DoodlePen.BITMAP || pen === DoodlePen.TEXT) {
-                mShapeContainer!!.visibility = GONE
-                if (pen === DoodlePen.BITMAP) {
-                    mColorContainer!!.visibility = GONE
-                } else {
-                    mColorContainer!!.visibility = VISIBLE
-                }
-            } else {
-                mShapeContainer!!.visibility = VISIBLE
-                if (pen === DoodlePen.ERASER) {
-                    mColorContainer!!.visibility = GONE
-                } else {
-                    mColorContainer!!.visibility = VISIBLE
-                }
-            }
-            setSingleSelected(mBtnPenIds.values, mBtnPenIds[pen]!!)
-            if (mTouchGestureListener!!.selectedItem == null) {
-                mPenSizeMap[oldPen] = size // save
-                val size = mPenSizeMap[pen] // restore
-                if (size != null) {
-                    mDoodle!!.size = size
-                }
-                if (isEditMode) {
-                    mShapeContainer!!.visibility = GONE
-                    mColorContainer!!.visibility = GONE
-                }
-            } else {
-                mShapeContainer!!.visibility = GONE
-                return
-            }
-
-            when {
-                pen === DoodlePen.BRUSH -> {
-                    mDoodle.color = DoodleColor(mDoodleParams!!.mPaintColor)
-                }
-                pen === DoodlePen.ERASER -> {
-                }
-                pen === DoodlePen.TEXT -> {
-                    mDoodle.color = DoodleColor(mDoodleParams!!.mPaintColor)
-                }
-                pen === DoodlePen.BITMAP -> {
-                    mDoodle.color = DoodleColor(mDoodleParams!!.mPaintColor)
-                }
-            }
-        }
 
         private val mBtnShapeIds: MutableMap<IDoodleShape, Int> = HashMap()
         override fun setShape(shape: IDoodleShape) {
@@ -755,9 +743,9 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                     mDoodle!!.setIsDrawableOutside(mLastIsDrawableOutside!!)
                 }
                 mTouchGestureListener!!.center() // center picture
-                if (mTouchGestureListener!!.selectedItem == null) { // restore
+                /*if (mTouchGestureListener!!.selectedItem == null) { // restore
                     pen = pen
-                }
+                }*/
                 mTouchGestureListener!!.selectedItem = null
                 mPenContainer!!.visibility = VISIBLE
                 binding.btnUndo.visibility = VISIBLE
@@ -768,13 +756,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
             for (id in ids) {
                 this@DoodleActivity.findViewById<View>(id).isSelected = id == selectedId
             }
-        }
-
-        init {
-            mBtnPenIds[DoodlePen.BRUSH] = cn.hzw.doodle.R.id.btn_pen_hand
-            mBtnPenIds[DoodlePen.ERASER] = cn.hzw.doodle.R.id.btn_pen_eraser
-            mBtnPenIds[DoodlePen.TEXT] = cn.hzw.doodle.R.id.btn_pen_text
-            mBtnPenIds[DoodlePen.BITMAP] = cn.hzw.doodle.R.id.btn_pen_bitmap
         }
 
         init {
@@ -800,7 +781,7 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onSetLegend(legend: Legend?) {
         currentLegend = legend
-        mDoodle!!.pen = DoodlePen.TEXT
+        setPen(DoodlePen.TEXT)
         isLegend = true
         // setPen
     }
