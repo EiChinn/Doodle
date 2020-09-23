@@ -254,14 +254,14 @@ public interface IDoodle {
     public void clear();
 
     /**
-     * 置顶item
+     * 置顶item （栈顶， 而不是屏幕底部）
      *
      * @param item
      */
     public void topItem(IDoodleItem item);
 
     /**
-     * 置底item
+     * 置底item （栈底，而不是屏幕底部）
      *
      * @param item
      */

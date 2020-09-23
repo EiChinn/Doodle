@@ -174,19 +174,11 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
             }
         })
         mDoodle = mDoodleView
-        mTouchGestureListener = object : DoodleOnTouchGestureListener(mDoodleView, object : ISelectionListener {
+        mTouchGestureListener = DoodleOnTouchGestureListener(mDoodleView, object : DoodleOnTouchGestureListener.ISelectionListener {
             // save states before being selected
             var mLastPen: IDoodlePen? = null
             var mLastColor: IDoodleColor? = null
             var mSize: Float? = null
-            var mIDoodleItemListener = IDoodleItemListener { property ->
-                if (mTouchGestureListener!!.selectedItem == null) {
-                    return@IDoodleItemListener
-                }
-                if (property == IDoodleItemListener.PROPERTY_SCALE) {
-                    binding.itemScale.text = "${(mTouchGestureListener!!.selectedItem.scale * 100 + 0.5f).toInt()}%"
-                }
-            }
 
             override fun onSelectedItem(doodle: IDoodle, selectableItem: IDoodleSelectableItem, selected: Boolean) {
                 if (selected) {
@@ -204,10 +196,7 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                     mDoodle!!.color = selectableItem.color ?: DoodleColor(mDoodleParams!!.mPaintColor)
                     mDoodle!!.size = selectableItem.size
                     binding.doodleSelectableEditContainer.visibility = View.VISIBLE
-                    binding.itemScale.text = "${(selectableItem.scale * 100 + 0.5f).toInt()}%"
-                    selectableItem.addItemListener(mIDoodleItemListener)
                 } else {
-                    selectableItem.removeItemListener(mIDoodleItemListener)
                     if (mTouchGestureListener!!.selectedItem == null) { // nothing is selected. 当前没有选中任何一个item
                         if (mLastPen != null) {
                             mDoodle!!.pen = mLastPen
@@ -244,16 +233,7 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                     createDoodleBitmap(null, x, y)
                 }
             }
-        }) {
-            override fun setSupportScaleItem(supportScaleItem: Boolean) {
-                super.setSupportScaleItem(supportScaleItem)
-                if (supportScaleItem) {
-                    binding.itemScale.visibility = View.VISIBLE
-                } else {
-                    binding.itemScale.visibility = View.GONE
-                }
-            }
-        }
+        })
         val detector: IDoodleTouchDetector = DoodleTouchDetector(applicationContext, mTouchGestureListener)
         mDoodleView!!.defaultTouchDetector = detector
         mDoodle!!.setIsDrawableOutside(mDoodleParams!!.mIsDrawableOutside)
@@ -484,12 +464,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
             true
         })
         binding.doodleSelectableEditContainer.visibility = View.GONE
-        binding.itemScale.setOnLongClickListener {
-            if (mTouchGestureListener!!.selectedItem != null) {
-                mTouchGestureListener!!.selectedItem.scale = 1f
-            }
-            true
-        }
         mSettingsPanel = findViewById(cn.hzw.doodle.R.id.doodle_panel)
         mShapeContainer = findViewById(cn.hzw.doodle.R.id.shape_container)
         mPenContainer = findViewById(cn.hzw.doodle.R.id.pen_container)
@@ -538,10 +512,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
             if (needRefreshLegendIndex) {
                 refreshLegendIndex()
             }
-        } else if (v.id == cn.hzw.doodle.R.id.doodle_selectable_top) {
-            mDoodle!!.topItem(mTouchGestureListener!!.selectedItem)
-        } else if (v.id == cn.hzw.doodle.R.id.doodle_selectable_bottom) {
-            mDoodle!!.bottomItem(mTouchGestureListener!!.selectedItem)
         } else if (v.id == cn.hzw.doodle.R.id.btn_hand_write) {
             mDoodle!!.shape = DoodleShape.HAND_WRITE
         } else if (v.id == cn.hzw.doodle.R.id.btn_arrow) {
