@@ -171,7 +171,7 @@ public class DialogController {
         return dialog;
     }
 
-    public static Dialog showSelectImageDialog(Activity activity, final ImageSelectorView.ImageSelectorListener listener) {
+    public static Dialog showSelectImageDialog(Activity activity, final List<String> assetList, final ImageSelectorView.ImageSelectorListener listener) {
         final Dialog dialog = getDialog(activity);
         dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         dialog.show();
@@ -185,7 +185,7 @@ public class DialogController {
         dialog.setContentView(container);
 
         ViewGroup selectorContainer = (ViewGroup) dialog.findViewById(R.id.doodle_image_selector_container);
-        ImageSelectorView selectorView = new ImageSelectorView(activity, false, 1, null, new ImageSelectorView.ImageSelectorListener() {
+        ImageSelectorView selectorView = new ImageSelectorView(activity, false, 1, null, assetList, new ImageSelectorView.ImageSelectorListener() {
             @Override
             public void onCancel() {
                 dialog.dismiss();

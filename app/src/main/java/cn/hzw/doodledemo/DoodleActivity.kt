@@ -201,7 +201,7 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                     }
                     mDoodleView!!.isEditMode = true
                     mDoodle!!.pen = selectableItem.pen
-                    mDoodle!!.color = selectableItem.color
+                    mDoodle!!.color = selectableItem.color ?: DoodleColor(mDoodleParams!!.mPaintColor)
                     mDoodle!!.size = selectableItem.size
                     binding.doodleSelectableEditContainer.visibility = View.VISIBLE
                     binding.itemScale.text = "${(selectableItem.scale * 100 + 0.5f).toInt()}%"
@@ -391,7 +391,7 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
     private fun displayTestPointList() {
         val testPointListStr = mDoodle.allItem
                 .filterIsInstance<DoodleLegendSymbolText>()
-                .sortedWith(compareBy ( {it.legend.symbol}, {it.legend.createTime}))
+                .sortedWith(compareBy({ it.legend.symbol }, { it.legend.createTime }))
                 .joinToString(separator = "\n") { it.text }
         if (testPointListText == null) {
             val maxWidth = mDoodleView.toX(600.0f).toInt()
@@ -443,12 +443,21 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
         }, null)
     }
 
+    private var assetImgList: List<String>? = null
     // 添加贴图
     private fun createDoodleBitmap(doodleBitmap: DoodleBitmap?, x: Float, y: Float) {
-        DialogController.showSelectImageDialog(this, object : ImageSelectorListener {
+        if (assetImgList == null) {
+            assetImgList = assets.list("")?.filter { it.endsWith(".jpg") || it.endsWith(".png")}?.map { "assets/$it" }
+        }
+        DialogController.showSelectImageDialog(this, assetImgList, object : ImageSelectorListener {
             override fun onCancel() {}
             override fun onEnter(pathList: List<String>) {
-                val bitmap = ImageUtils.createBitmapFromPath(pathList[0], mDoodleView!!.width / 4, mDoodleView!!.height / 4)
+                val bitmap = ImgUtils.createBitmapFromPath(
+                        pathList[0],
+                        mDoodleView.width / 4,
+                        mDoodleView.height / 4,
+                        this@DoodleActivity
+                )
                 if (doodleBitmap == null) {
                     val item: IDoodleSelectableItem = DoodleBitmap(mDoodle, bitmap, mDoodle!!.size, x, y)
                     mDoodle!!.addItem(item)
@@ -689,6 +698,20 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                 mShapeContainer!!.visibility = GONE
                 return
             }
+
+            when {
+                pen === DoodlePen.BRUSH -> {
+                    mDoodle.color = DoodleColor(mDoodleParams!!.mPaintColor)
+                }
+                pen === DoodlePen.ERASER -> {
+                }
+                pen === DoodlePen.TEXT -> {
+                    mDoodle.color = DoodleColor(mDoodleParams!!.mPaintColor)
+                }
+                pen === DoodlePen.BITMAP -> {
+                    mDoodle.color = DoodleColor(mDoodleParams!!.mPaintColor)
+                }
+            }
         }
 
         private val mBtnShapeIds: MutableMap<IDoodleShape, Int> = HashMap()
@@ -777,11 +800,7 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
 
         private fun setSingleSelected(ids: Collection<Int>, selectedId: Int) {
             for (id in ids) {
-                if (id == selectedId) {
-                    this@DoodleActivity.findViewById<View>(id).isSelected = true
-                } else {
-                    this@DoodleActivity.findViewById<View>(id).isSelected = false
-                }
+                this@DoodleActivity.findViewById<View>(id).isSelected = id == selectedId
             }
         }
 

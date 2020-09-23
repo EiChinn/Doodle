@@ -52,7 +52,9 @@ public class ImageSelectorView extends FrameLayout implements View.OnClickListen
 
     private ImageSelectorListener mSelectorListener;
 
-    public ImageSelectorView(Context context, boolean isMultipleChoice, int maxCount, final List<String> pathList, ImageSelectorListener listener) {
+    public ImageSelectorView(final Context context, boolean isMultipleChoice, int maxCount,
+                             final List<String> pathList, final List<String> assetList,
+                             ImageSelectorListener listener) {
         super(context);
         View view = LayoutInflater.from(getContext()).inflate(R.layout.doodle_layout_image_selector, null);
         addView(view, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -69,6 +71,9 @@ public class ImageSelectorView extends FrameLayout implements View.OnClickListen
         mBtnEnter.setOnClickListener(this);
         findViewById(R.id.btn_back).setOnClickListener(this);
         mPathList = new ArrayList<String>();
+        if (assetList != null && !assetList.isEmpty()) {
+            mPathList.addAll(0, assetList);
+        }
         mHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
