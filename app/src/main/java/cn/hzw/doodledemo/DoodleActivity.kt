@@ -253,7 +253,16 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                 hideView(binding.doodlePanel)
                 true
             }
-            R.id.menu_save -> mDoodle!!.save()
+            R.id.menu_save -> {
+                AlertDialog.Builder(this)
+                        .setMessage("保存图片并退出？")
+                        .setNegativeButton("取消", null)
+                        .setPositiveButton("确定") { _, _ ->
+                            mDoodleView.save()
+                        }
+                        .create().show()
+
+            }
             R.id.menu_legend -> {
                 val legendDialogFragment = LegendDialogFragment()
                 legendDialogFragment.show(supportFragmentManager, "LegendDialogFragment")
