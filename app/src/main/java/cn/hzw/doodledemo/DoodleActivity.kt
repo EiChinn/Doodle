@@ -45,9 +45,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
     private lateinit var mDoodleView: DoodleView
     private var isPanelHide = false
     private var isLegend = false
-    private var mSettingsPanel: View? = null
-    private var mBtnColor: View? = null
-    private var mRedoBtn: View? = null
     private var mViewShowAnimation: AlphaAnimation? = null
     private var mViewHideAnimation: AlphaAnimation? = null // view隐藏和显示时用到的渐变动画
     private var mDoodleParams: DoodleParams? = null
@@ -173,9 +170,9 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
 
             override fun onAddItem() {
                 if (mDoodleView.redoItemCount > 0) {
-                    mRedoBtn!!.visibility = DoodleView.VISIBLE
+                    binding.btnRedo.visibility = DoodleView.VISIBLE
                 } else {
-                    mRedoBtn!!.visibility = DoodleView.GONE
+                    binding.btnRedo.visibility = DoodleView.GONE
                 }
 
             }
@@ -250,10 +247,10 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                 }
             }
             R.id.menu_hide_tool_bar -> isPanelHide = if (isPanelHide) {
-                showView(mSettingsPanel)
+                showView(binding.doodlePanel)
                 false
             } else {
-                hideView(mSettingsPanel)
+                hideView(binding.doodlePanel)
                 true
             }
             R.id.menu_save -> mDoodle!!.save()
@@ -429,9 +426,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
     //
     private fun initView() {
         binding.doodleSelectableEditContainer.visibility = View.GONE
-        mSettingsPanel = findViewById(cn.hzw.doodle.R.id.doodle_panel)
-        mRedoBtn = findViewById(cn.hzw.doodle.R.id.btn_redo)
-        mBtnColor = findViewById(cn.hzw.doodle.R.id.btn_set_color)
         mViewShowAnimation = AlphaAnimation(0.0f, 1.0f)
         mViewShowAnimation!!.duration = 150
         mViewHideAnimation = AlphaAnimation(1.0f, 0.0f)
@@ -460,9 +454,9 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
             mTouchGestureListener!!.selectedItem = null
             mDoodle.undo()
             if (mDoodle.redoItemCount > 0) {
-                mRedoBtn!!.visibility = DoodleView.VISIBLE
+                binding.btnRedo.visibility = DoodleView.VISIBLE
             } else {
-                mRedoBtn!!.visibility = DoodleView.GONE
+                binding.btnRedo.visibility = DoodleView.GONE
             }
         } else if (v.id == cn.hzw.doodle.R.id.btn_set_color_container) {
             val penSettingDialogFragment = PenSettingDialogFragment.newInstance(mDoodleView.size, mDoodleView.lineType.ordinal)
@@ -497,8 +491,8 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
         } else if (v.id == R.id.btn_polygon) {
             setShape(DoodleShape.TRIANGLE)
         } else if (v.id == cn.hzw.doodle.R.id.btn_redo) {
-            if (!mDoodle!!.redo(1)) {
-                mRedoBtn!!.visibility = View.GONE
+            if (!mDoodleView.redo(1)) {
+                binding.btnRedo.visibility = View.GONE
             }
         } else if (v.id == R.id.btn_clean) {
             AlertDialog.Builder(this)
@@ -508,7 +502,7 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                     .setPositiveButton("确定") { _, _ ->
                         mDoodle.clear()
                         mTouchGestureListener!!.selectedItem = null
-                        mRedoBtn!!.visibility = DoodleView.GONE
+                        binding.btnRedo.visibility = DoodleView.GONE
                     }
                     .create().show()
         }
