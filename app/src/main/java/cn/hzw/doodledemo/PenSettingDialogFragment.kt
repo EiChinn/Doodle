@@ -76,6 +76,7 @@ class PenSettingDialogFragment : DialogFragment() {
             }
             dismiss()
         }
+        binding.cancelBtn.setOnClickListener { dismiss() }
     }
 
 

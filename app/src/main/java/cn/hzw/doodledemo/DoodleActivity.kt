@@ -440,17 +440,17 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
 
     fun onClick(v: View) {
         resetState()
-        if (v.id == cn.hzw.doodle.R.id.btn_pen_hand) {
+        if (v.id == R.id.btn_pen_hand) {
             setPen(DoodlePen.BRUSH)
-        } else if (v.id == cn.hzw.doodle.R.id.btn_pen_eraser) {
+        } else if (v.id == R.id.btn_pen_eraser) {
             setPen(DoodlePen.ERASER)
-        } else if (v.id == cn.hzw.doodle.R.id.btn_pen_text) {
+        } else if (v.id == R.id.btn_pen_text) {
             setPen(DoodlePen.TEXT)
-        } else if (v.id == cn.hzw.doodle.R.id.btn_pen_bitmap) {
+        } else if (v.id == R.id.btn_pen_bitmap) {
             setPen(DoodlePen.BITMAP)
-        } else if (v.id == cn.hzw.doodle.R.id.doodle_btn_brush_edit) {
+        } else if (v.id == R.id.doodle_btn_brush_edit) {
             setEditMode(!mDoodleView.isEditMode)
-        } else if (v.id == cn.hzw.doodle.R.id.btn_undo) {
+        } else if (v.id == R.id.btn_undo) {
             mTouchGestureListener!!.selectedItem = null
             mDoodle.undo()
             if (mDoodle.redoItemCount > 0) {
@@ -458,16 +458,16 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
             } else {
                 binding.btnRedo.visibility = DoodleView.GONE
             }
-        } else if (v.id == cn.hzw.doodle.R.id.btn_set_color_container) {
+        } else if (v.id == R.id.btn_set_color_container) {
             val penSettingDialogFragment = PenSettingDialogFragment.newInstance(mDoodleView.size, mDoodleView.lineType.ordinal)
             penSettingDialogFragment.show(supportFragmentManager, "PenSettingDialogFragment")
-        } else if (v.id == cn.hzw.doodle.R.id.doodle_selectable_edit) {
+        } else if (v.id == R.id.doodle_selectable_edit) {
             if (mTouchGestureListener!!.selectedItem is DoodleText) {
                 createDoodleText(mTouchGestureListener!!.selectedItem as DoodleText, -1f, -1f)
             } else {
                 Toast.makeText(this, "当前图形不支持编辑内容", Toast.LENGTH_SHORT).show()
             }
-        } else if (v.id == cn.hzw.doodle.R.id.doodle_selectable_remove) {
+        } else if (v.id == R.id.doodle_selectable_remove) {
             val needRefreshLegendIndex = mTouchGestureListener!!.selectedItem is DoodleLegendSymbolText
             mDoodle.removeItem(mTouchGestureListener!!.selectedItem)
             mTouchGestureListener!!.selectedItem = null
@@ -489,8 +489,9 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
         } else if (v.id == R.id.btn_polyline) {
             setShape(DoodleShape.POLYLINE)
         } else if (v.id == R.id.btn_polygon) {
-            setShape(DoodleShape.TRIANGLE)
-        } else if (v.id == cn.hzw.doodle.R.id.btn_redo) {
+            val selectPolygonDialogFragment = SelectPolygonDialogFragment.newInstance()
+            selectPolygonDialogFragment.show(supportFragmentManager, "SelectPolygonDialogFragment")
+        } else if (v.id == R.id.btn_redo) {
             if (!mDoodleView.redo(1)) {
                 binding.btnRedo.visibility = View.GONE
             }
@@ -508,6 +509,11 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun selectPolygon(selectedPolygonEvent: SelectPolygonEvent) {
+        setShape(selectedPolygonEvent.selectedPolygon)
+    }
+
     override fun onBackPressed() { // 返回键监听
         if (mDoodleView.isEditMode) {
             setEditMode(false)
@@ -519,8 +525,8 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
         }
         if (!(DoodleParams.getDialogInterceptor() != null
                         && DoodleParams.getDialogInterceptor().onShow(this@DoodleActivity, mDoodle, DoodleParams.DialogType.SAVE))) {
-            DialogController.showMsgDialog(this@DoodleActivity, getString(cn.hzw.doodle.R.string.doodle_saving_picture), null, getString(cn.hzw.doodle.R.string.doodle_cancel),
-                    getString(cn.hzw.doodle.R.string.doodle_save), { mDoodle!!.save() }) { finish() }
+            DialogController.showMsgDialog(this@DoodleActivity, getString(R.string.doodle_saving_picture), null, getString(R.string.doodle_cancel),
+                    getString(R.string.doodle_save), { mDoodle!!.save() }) { finish() }
         }
     }
 
