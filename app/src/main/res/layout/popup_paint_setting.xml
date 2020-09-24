@@ -4,8 +4,6 @@
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@drawable/bg_popup"
-    android:minWidth="210dp"
     android:padding="16dp">
 
     <TextView
@@ -29,10 +27,11 @@
         />
 
     <SeekBar
-        android:id="@+id/stroke_seekbar"
+        android:id="@+id/paint_size_seekbar"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="5dp"
+        android:max="200"
         app:layout_constraintTop_toTopOf="@+id/paint_size_text"
         app:layout_constraintBottom_toBottomOf="@+id/paint_size_text"
         app:layout_constraintStart_toEndOf="@+id/paint_size_text"
@@ -59,16 +58,25 @@
         android:layout_marginTop="5dp">
 
         <RadioButton
-            android:id="@+id/solid_line_btn"
+            android:id="@+id/solid_line_rb"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="实线"
             android:checked="true"/>
         <RadioButton
-            android:id="@+id/dotted_line_btn"
+            android:id="@+id/dotted_line_rb"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="虚线" />
     </RadioGroup>
+
+    <Button
+        android:id="@+id/confirm_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="确定"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/line_type_group"
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -4,16 +4,13 @@ import android.animation.ValueAnimator
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.os.Environment
 import android.os.PersistableBundle
 import android.text.TextUtils
-import android.util.DisplayMetrics
 import android.view.*
 import android.view.animation.AlphaAnimation
-import android.widget.*
-import android.widget.SeekBar.OnSeekBarChangeListener
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import cn.forward.androids.utils.ImageUtils
@@ -21,7 +18,10 @@ import cn.forward.androids.utils.LogUtil
 import cn.forward.androids.utils.StatusBarUtil
 import cn.forward.androids.utils.Util
 import cn.hzw.doodle.*
-import cn.hzw.doodle.core.*
+import cn.hzw.doodle.core.IDoodle
+import cn.hzw.doodle.core.IDoodlePen
+import cn.hzw.doodle.core.IDoodleSelectableItem
+import cn.hzw.doodle.core.IDoodleTouchDetector
 import cn.hzw.doodle.dialog.DialogController
 import cn.hzw.doodle.imagepicker.ImageSelectorView.ImageSelectorListener
 import cn.hzw.doodledemo.databinding.DoodleLayoutBinding
@@ -149,23 +149,26 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
             }
 
             override fun onReady(doodle: IDoodle) {
-                var size: Float = if (mDoodleParams!!.mPaintUnitSize > 0) mDoodleParams!!.mPaintUnitSize * mDoodle!!.unitSize else 0.0f
+                var size: Float = if (mDoodleParams!!.mPaintUnitSize > 0) {
+                    mDoodleParams!!.mPaintUnitSize * mDoodleView.unitSize
+                } else { 0.0f }
+
                 if (size <= 0) {
-                    size = if (mDoodleParams!!.mPaintPixelSize > 0) mDoodleParams!!.mPaintPixelSize else mDoodle!!.size
+                    size = if (mDoodleParams!!.mPaintPixelSize > 0) mDoodleParams!!.mPaintPixelSize else mDoodleView.size
                 }
                 // 设置初始值
-                mDoodle!!.size = size
+                mDoodleView.size = size
                 // 选择画笔
                 setPen(DoodlePen.BRUSH)
-                mDoodle!!.color = DoodleColor(mDoodleParams!!.mPaintColor)
-                mDoodle!!.zoomerScale = mDoodleParams!!.mZoomerScale
+                mDoodleView.color = DoodleColor(mDoodleParams!!.mPaintColor)
+                mDoodleView.zoomerScale = mDoodleParams!!.mZoomerScale
                 mTouchGestureListener!!.isSupportScaleItem = mDoodleParams!!.mSupportScaleItem
 
                 // 每个画笔的初始值
-                mPenSizeMap[DoodlePen.BRUSH] = mDoodle!!.size
-                mPenSizeMap[DoodlePen.ERASER] = mDoodle!!.size
-                mPenSizeMap[DoodlePen.TEXT] = DEFAULT_TEXT_SIZE * mDoodle!!.unitSize
-                mPenSizeMap[DoodlePen.BITMAP] = DEFAULT_BITMAP_SIZE * mDoodle!!.unitSize
+                mPenSizeMap[DoodlePen.BRUSH] = mDoodleView.size
+                mPenSizeMap[DoodlePen.ERASER] = mDoodleView.size
+                mPenSizeMap[DoodlePen.TEXT] = DEFAULT_TEXT_SIZE * mDoodleView.unitSize
+                mPenSizeMap[DoodlePen.BITMAP] = DEFAULT_BITMAP_SIZE * mDoodleView.unitSize
             }
 
             override fun onAddItem() {
@@ -179,41 +182,13 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
         })
         mDoodle = mDoodleView
         mTouchGestureListener = DoodleOnTouchGestureListener(mDoodleView, object : DoodleOnTouchGestureListener.ISelectionListener {
-            // save states before being selected
-            var mLastPen: IDoodlePen? = null
-            var mLastColor: IDoodleColor? = null
-            var mSize: Float? = null
 
             override fun onSelectedItem(doodle: IDoodle, selectableItem: IDoodleSelectableItem, selected: Boolean) {
                 if (selected) {
-                    if (mLastPen == null) {
-                        mLastPen = mDoodle!!.pen
-                    }
-                    if (mLastColor == null) {
-                        mLastColor = mDoodle!!.color
-                    }
-                    if (mSize == null) {
-                        mSize = mDoodle!!.size
-                    }
                     setEditMode(true)
-                    /*mDoodle!!.pen = selectableItem.pen
-                    mDoodle!!.color = selectableItem.color ?: DoodleColor(mDoodleParams!!.mPaintColor)
-                    mDoodle!!.size = selectableItem.size*/
                     binding.doodleSelectableEditContainer.visibility = View.VISIBLE
                 } else {
                     if (mTouchGestureListener!!.selectedItem == null) { // nothing is selected. 当前没有选中任何一个item。 点击空白处或者删除了所有图形
-                        /*if (mLastPen != null) {
-                            mDoodle!!.pen = mLastPen
-                            mLastPen = null
-                        }
-                        if (mLastColor != null) {
-                            mDoodle!!.color = mLastColor
-                            mLastColor = null
-                        }
-                        if (mSize != null) {
-                            mDoodle!!.size = mSize!!
-                            mSize = null
-                        }*/
                         binding.doodleSelectableEditContainer.visibility = View.GONE
                     }
                 }
@@ -223,7 +198,7 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                 if (mDoodle.pen === DoodlePen.TEXT) {
                     // if legend draw it
                     if (isLegend) {
-                        val item = DoodleLegendSymbolText(mDoodle, currentLegend!!.symbol, mDoodle!!.size, mDoodle!!.color.copy(), x, y)
+                        val item = DoodleLegendSymbolText(mDoodle, currentLegend!!.symbol, mDoodleView.size, mDoodleView.color.copy(), x, y)
                         item.legend = currentLegend
                         mDoodle.addItem(item)
                         //                        mTouchGestureListener.setSelectedItem(item);
@@ -239,11 +214,11 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
             }
         })
         val detector: IDoodleTouchDetector = DoodleTouchDetector(applicationContext, mTouchGestureListener)
-        mDoodleView!!.defaultTouchDetector = detector
-        mDoodle!!.setIsDrawableOutside(mDoodleParams!!.mIsDrawableOutside)
+        mDoodleView.defaultTouchDetector = detector
+        mDoodleView.setIsDrawableOutside(mDoodleParams!!.mIsDrawableOutside)
         binding.doodleContainer.addView(mDoodleView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-        mDoodle!!.doodleMinScale = mDoodleParams!!.mMinScale
-        mDoodle!!.doodleMaxScale = mDoodleParams!!.mMaxScale
+        mDoodleView.doodleMinScale = mDoodleParams!!.mMinScale
+        mDoodleView.doodleMaxScale = mDoodleParams!!.mMaxScale
         initView()
     }
 
@@ -293,10 +268,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
             }
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    private fun canChangeColor(pen: IDoodlePen): Boolean {
-        return pen !== DoodlePen.ERASER && pen !== DoodlePen.BITMAP
     }
     private fun refreshLegendIndex() {
         val sortedLegends = mDoodle.allItem
@@ -494,7 +465,8 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
                 mRedoBtn!!.visibility = DoodleView.GONE
             }
         } else if (v.id == cn.hzw.doodle.R.id.btn_set_color_container) {
-            showPopup(mBtnColor)
+            val penSettingDialogFragment = PenSettingDialogFragment.newInstance(mDoodleView.size, mDoodleView.lineType.ordinal)
+            penSettingDialogFragment.show(supportFragmentManager, "PenSettingDialogFragment")
         } else if (v.id == cn.hzw.doodle.R.id.doodle_selectable_edit) {
             if (mTouchGestureListener!!.selectedItem is DoodleText) {
                 createDoodleText(mTouchGestureListener!!.selectedItem as DoodleText, -1f, -1f)
@@ -576,63 +548,21 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
         view.visibility = View.GONE
     }
 
-    // 画笔设置
-    // 显示弹出调色板
-    private fun showPopup(anchor: View?) {
-        val metrics = DisplayMetrics()
-        windowManager.defaultDisplay.getMetrics(metrics)
-
-        // 创建弹出调色板
-        val popup = PopupWindow(this)
-        val contentView = layoutInflater.inflate(R.layout.popup_paint_setting, null, false)
-        val paintSizeText = contentView.findViewById<TextView>(R.id.paint_size_text)
-        // seekbar初始化
-        val mSeekBar = contentView.findViewById<SeekBar>(R.id.stroke_seekbar)
-        mSeekBar.max = 20
-        mSeekBar.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
-            override fun onStopTrackingTouch(seekBar: SeekBar) {}
-            override fun onStartTrackingTouch(seekBar: SeekBar) {}
-            override fun onProgressChanged(seekBar: SeekBar, progress: Int,
-                                           fromUser: Boolean) {
-                paintSizeText.text = progress.toString() + ""
-                if (mDoodle!!.size.toInt() == progress) {
-                    return
-                }
-                mDoodle!!.size = progress.toFloat()
-                if (mTouchGestureListener!!.selectedItem != null) {
-                    mTouchGestureListener!!.selectedItem.size = progress.toFloat()
-                }
-            }
-        })
-        mSeekBar.progress = mDoodleView!!.size.toInt()
-        val lineTypeGroup = contentView.findViewById<RadioGroup>(R.id.line_type_group)
-        lineTypeGroup.setOnCheckedChangeListener { group, checkedId ->
-            if (checkedId == R.id.solid_line_btn) {
-                mDoodle!!.lineType = IDoodle.LineType.SOLID_LINE
-            } else {
-                mDoodle!!.lineType = IDoodle.LineType.DOTTED_LINE
-            }
-        }
-        if (mDoodle!!.lineType == IDoodle.LineType.SOLID_LINE) {
-            lineTypeGroup.check(R.id.solid_line_btn)
-        } else {
-            lineTypeGroup.check(R.id.dotted_line_btn)
-        }
-        popup.contentView = contentView
-        popup.width = WindowManager.LayoutParams.WRAP_CONTENT
-        popup.height = WindowManager.LayoutParams.WRAP_CONTENT
-        popup.isFocusable = true
-        popup.setOnDismissListener { }
-
-        // 清除默认的半透明背景
-        popup.setBackgroundDrawable(BitmapDrawable())
-        popup.showAsDropDown(anchor)
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun changePenAttrs(newAttrs: ChangePenAttrEvent) {
+        mDoodleView.size = newAttrs.paintSize
+        mDoodleView.lineType = newAttrs.paintLineType
     }
 
-    private fun setPen(pen: DoodlePen) {
-        mDoodle.pen = pen
+    private fun setPen(newPen: DoodlePen) {
+        val oldPen = mDoodleView.pen
+        mPenSizeMap[oldPen] = mDoodleView.size // save current pen size
+        mDoodleView.pen = newPen
+        mPenSizeMap[newPen]?.let {
+            mDoodleView.size = it // restore new pen size in history
+        }
         resetPen()
-        when (pen) {
+        when (newPen) {
             DoodlePen.BRUSH -> setPenBrush()
             DoodlePen.ERASER -> setPenEraser()
             DoodlePen.TEXT -> setPenText()
@@ -773,8 +703,6 @@ class DoodleActivity : AppCompatActivity(), DoodleContract.View {
 
     companion object {
         const val TAG = "Doodle"
-        const val DEFAULT_MOSAIC_SIZE = 20 // 默认马赛克大小
-        const val DEFAULT_COPY_SIZE = 20 // 默认仿制大小
         const val DEFAULT_TEXT_SIZE = 18 // 默认文字大小
         const val DEFAULT_BITMAP_SIZE = 80 // 默认贴图大小
         const val RESULT_ERROR = -111 // 出现错误

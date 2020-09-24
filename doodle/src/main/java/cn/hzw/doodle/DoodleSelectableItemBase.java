@@ -57,7 +57,7 @@ public abstract class DoodleSelectableItemBase extends DoodleItemBase implements
     public void setSize(float size) {
         super.setSize(size);
         resetBounds(getBounds());
-        setLocation(getPivotX() - getBounds().width() / 2, getPivotY() - getBounds().height() / 2,
+        setLocation(getPivotX() - getBounds().width() / 2.0f, getPivotY() - getBounds().height() / 2.0f,
                 false);
         resetBoundsScaled(getBounds());
     }

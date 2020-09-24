@@ -35,8 +35,8 @@ public class DoodleText extends DoodleRotatableItemBase {
     public void setText(String text) {
         mText = text;
         resetBounds(mRect);
-        setPivotX(getLocation().x + mRect.width() / 2);
-        setPivotY(getLocation().y + mRect.height() / 2);
+        setPivotX(getLocation().x + mRect.width() / 2.0f);
+        setPivotY(getLocation().y + mRect.height() / 2.0f);
         resetBoundsScaled(getBounds());
 
         refresh();
